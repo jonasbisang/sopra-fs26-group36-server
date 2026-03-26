@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * Internal User Representation
@@ -26,7 +27,7 @@ public class User implements Serializable {
 	@GeneratedValue
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String name;
 
 	@Column(nullable = false, unique = true)
@@ -37,6 +38,18 @@ public class User implements Serializable {
 
 	@Column(nullable = false)
 	private UserStatus status;
+
+	@Column(nullable = false, unique = true)
+	private String email;
+
+	@Column(nullable = false, unique = false)
+	private String password;
+
+	@Column(nullable = true, unique = false)
+	private String bio;
+
+	@Column(nullable = false, unique = true)
+	private LocalDate creationDate;
 
 	public Long getId() {
 		return id;
@@ -76,5 +89,37 @@ public class User implements Serializable {
 
 	public void setStatus(UserStatus status) {
 		this.status = status;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getBio() {
+		return bio;
+	}
+
+	public void setBio(String bio) {
+		this.bio = bio;
+	}
+
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 }

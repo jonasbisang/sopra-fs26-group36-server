@@ -32,11 +32,9 @@ public class UserController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public List<UserGetDTO> getAllUsers() {
-		// fetch all users in the internal representation
 		List<User> users = userService.getUsers();
 		List<UserGetDTO> userGetDTOs = new ArrayList<>();
 
-		// convert each user to the API representation
 		for (User user : users) {
 			userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
 		}
@@ -47,12 +45,9 @@ public class UserController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody
 	public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-		// convert API user to internal representation
 		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
-		// create user
 		User createdUser = userService.createUser(userInput);
-		// convert internal representation of user back to API
 		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
 	}
 }

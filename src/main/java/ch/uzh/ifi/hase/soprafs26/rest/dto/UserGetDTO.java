@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
+import java.nio.charset.StandardCharsets;
+
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
 public class UserGetDTO {

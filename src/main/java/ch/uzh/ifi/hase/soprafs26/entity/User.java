@@ -48,7 +48,7 @@ public class User implements Serializable {
 	@Column(nullable = true, unique = false)
 	private String bio;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private LocalDate creationDate;
 
 	public Long getId() {

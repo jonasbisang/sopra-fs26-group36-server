@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +32,8 @@ public class UserService {
 
 	private final UserRepository userRepository;
 
+	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 	public UserService(@Qualifier("userRepository") UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
@@ -55,6 +58,9 @@ public class UserService {
 		newUser.setToken(UUID.randomUUID().toString());
 		newUser.setCreationDate(LocalDate.now());
 		newUser.setStatus(UserStatus.OFFLINE);
+
+		String hashedPassword = passwordEncoder.encode(newUser.getPassword());
+		newUser.setPassword(hashedPassword);
 
 		checkIfUserExists(newUser);
 

@@ -28,8 +28,22 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@GetMapping("/users")
+	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
+	@ResponseBody
+	public UserGetDTO loginUser (@RequestBody UserPostDTO userPostDTO) {
+		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+		User loggedInUser = userService.loginUser(userInput);
+		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
+	}
+	@PostMapping("/logout")
+	@ResponseStatus(HttpStatus.OK)
+	public void logoutUser(@RequestHeader("Authorization") String token) {
+		userService.logoutUser(token);
+	}
+
+	@GetMapping("/users")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ResponseBody
 	public List<UserGetDTO> getAllUsers() {
 		List<User> users = userService.getUsers();

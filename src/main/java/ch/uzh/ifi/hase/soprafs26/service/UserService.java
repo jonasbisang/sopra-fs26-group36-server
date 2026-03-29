@@ -71,6 +71,33 @@ public class UserService {
 		return newUser;
 	}
 
+	public User loginUser(User userInput) {
+		User existingUser = userRepository.findByUsername(userInput.getUsername());
+		if (existingUser == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username not found");
+		}
+		if (!passwordEncoder.matches(userInput.getPassword(), existingUser.getPassword())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong password");
+		}
+		existingUser.setToken(UUID.randomUUID().toString());
+		existingUser.setStatus(UserStatus.ONLINE);
+		userRepository.save(existingUser);
+		userRepository.flush();
+		return existingUser;
+	}
+
+	public void logoutUser(String token) {
+		User user = userRepository.findByToken(token);
+
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+		}
+		user.setStatus(UserStatus.OFFLINE);
+		user.setToken(null);
+		userRepository.save(user);
+		userRepository.flush();
+	}
+
 	/**
 	 * This is a helper method that will check the uniqueness criteria of the
 	 * username and the name

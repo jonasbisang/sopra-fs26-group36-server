@@ -82,4 +82,13 @@ public class UserController {
         @RequestBody UserPutDTO userPutDTO) {
     	userService.changeUsername(id, token, userPutDTO.getNewUsername());
 }
+
+	@DeleteMapping("/users/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteUser(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token,
+        @RequestBody UserPutDTO userPutDTO) {
+    	userService.deleteUser(id, token, userPutDTO.getOldPassword());
+}
 }

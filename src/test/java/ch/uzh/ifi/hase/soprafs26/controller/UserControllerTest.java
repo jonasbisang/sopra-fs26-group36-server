@@ -19,6 +19,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -117,4 +121,59 @@ public class UserControllerTest {
 					String.format("The request body could not be created.%s", e.toString()));
 		}
 	}
+
+
+
+
+	@Test
+	public void changeUsername_validInput_usernameChanged() throws Exception {
+    UserPutDTO userPutDTO = new UserPutDTO();
+    userPutDTO.setNewUsername("newUsername123");
+    Mockito.doNothing().when(userService).changeUsername(Mockito.any(), Mockito.any(), Mockito.any());
+
+    MockHttpServletRequestBuilder putRequest = put("/users/1/username")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "some-token")
+        .content(asJsonString(userPutDTO));
+
+    mockMvc.perform(putRequest)
+        .andDo(print())
+        .andExpect(status().isNoContent());
+}
+
+@Test
+public void changeUsername_userNotFound_throwsError() throws Exception {
+    UserPutDTO userPutDTO = new UserPutDTO();
+    userPutDTO.setNewUsername("newUsername123");
+
+    Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
+        .when(userService).changeUsername(Mockito.any(), Mockito.any(), Mockito.any());
+
+    MockHttpServletRequestBuilder putRequest = put("/users/1/username")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "some-token")
+        .content(asJsonString(userPutDTO));
+
+    mockMvc.perform(putRequest)
+        .andDo(print())
+        .andExpect(status().isNotFound());
+}
+
+@Test
+public void changeUsername_duplicateUsername_throwsError() throws Exception {
+    UserPutDTO userPutDTO = new UserPutDTO();
+    userPutDTO.setNewUsername("alreadyTaken");
+
+    Mockito.doThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken!"))
+        .when(userService).changeUsername(Mockito.any(), Mockito.any(), Mockito.any());
+
+    MockHttpServletRequestBuilder putRequest = put("/users/1/username")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "some-token")
+        .content(asJsonString(userPutDTO));
+
+    mockMvc.perform(putRequest)
+        .andDo(print())
+        .andExpect(status().isConflict());
+}
 }

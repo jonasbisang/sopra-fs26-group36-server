@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
@@ -28,15 +29,27 @@ public class UserController {
 		this.userService = userService;
 	}
 
+	@PostMapping("/login")
+	@ResponseStatus(HttpStatus.OK)
+	@ResponseBody
+	public UserGetDTO loginUser (@RequestBody UserPostDTO userPostDTO) {
+		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+		User loggedInUser = userService.loginUser(userInput);
+		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
+	}
+	@PostMapping("/logout")
+	@ResponseStatus(HttpStatus.OK)
+	public void logoutUser(@RequestHeader("Authorization") String token) {
+		userService.logoutUser(token);
+	}
+
 	@GetMapping("/users")
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public List<UserGetDTO> getAllUsers() {
-		// fetch all users in the internal representation
 		List<User> users = userService.getUsers();
 		List<UserGetDTO> userGetDTOs = new ArrayList<>();
 
-		// convert each user to the API representation
 		for (User user : users) {
 			userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
 		}
@@ -47,12 +60,35 @@ public class UserController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody
 	public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-		// convert API user to internal representation
 		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
-		// create user
 		User createdUser = userService.createUser(userInput);
-		// convert internal representation of user back to API
 		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
 	}
+
+
+
+	@PutMapping("/users/{id}/password")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changePassword(@PathVariable Long id, @RequestBody UserPutDTO userPutDTO) {
+    userService.changePassword(id, userPutDTO.getOldPassword(), userPutDTO.getNewPassword());
+		}
+
+	@PutMapping("/users/{id}/username")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changeUsername(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token,
+        @RequestBody UserPutDTO userPutDTO) {
+    	userService.changeUsername(id, token, userPutDTO.getNewUsername());
+}
+
+	@DeleteMapping("/users/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteUser(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token,
+        @RequestBody UserPutDTO userPutDTO) {
+    	userService.deleteUser(id, token, userPutDTO.getOldPassword());
+}
 }

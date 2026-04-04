@@ -148,19 +148,5 @@ public class UserService {
     userRepository.save(user);
 	}
 
-	public void deleteUser(Long id, String token, String password) {
-    User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-    if (!token.equals(user.getToken())) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized for this action");
-    }
-
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong password");
-    }
-
-    userRepository.delete(user);
-    userRepository.flush();
-}
 
 }

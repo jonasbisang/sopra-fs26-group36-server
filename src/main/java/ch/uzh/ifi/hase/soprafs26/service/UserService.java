@@ -122,4 +122,31 @@ public class UserService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "Email", "is"));
 		}
 	}
+
+
+	public void changePassword(Long id, String oldPassword, String newPassword) {
+    User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    if (!user.getPassword().equals(oldPassword)) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Old password is incorrect");
+    }
+    user.setPassword(newPassword);
+    userRepository.save(user);
+	}
+
+	public void changeUsername(Long id, String token, String newUsername) {
+    User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    if (!user.getToken().equals(token)) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+    }
+
+    if (userRepository.findByUsername(newUsername) != null) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken!");
+    }
+    user.setUsername(newUsername);
+    userRepository.save(user);
+	}
+
+
 }

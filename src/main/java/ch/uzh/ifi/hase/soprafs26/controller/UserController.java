@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
@@ -43,7 +44,7 @@ public class UserController {
 	}
 
 	@GetMapping("/users")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public List<UserGetDTO> getAllUsers() {
 		List<User> users = userService.getUsers();
@@ -64,4 +65,21 @@ public class UserController {
 		User createdUser = userService.createUser(userInput);
 		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
 	}
+
+
+
+	@PutMapping("/users/{id}/password")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changePassword(@PathVariable Long id, @RequestBody UserPutDTO userPutDTO) {
+    userService.changePassword(id, userPutDTO.getOldPassword(), userPutDTO.getNewPassword());
+		}
+
+	@PutMapping("/users/{id}/username")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changeUsername(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token,
+        @RequestBody UserPutDTO userPutDTO) {
+    	userService.changeUsername(id, token, userPutDTO.getNewUsername());
+}
 }

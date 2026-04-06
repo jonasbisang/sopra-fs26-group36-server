@@ -6,7 +6,9 @@ import org.mapstruct.factory.Mappers;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
-
+import ch.uzh.ifi.hase.soprafs26.entity.Group;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 /**
  * DTOMapper
  * This class is responsible for generating classes that will automatically
@@ -38,4 +40,16 @@ public interface DTOMapper {
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
 	UserGetDTO convertEntityToUserGetDTO(User user);
+
+	//convertUserPutDTOtoEntity is missing!!
+
+	@Mapping(target = "groupId", ignore = true)
+	@Mapping(source = "name", target = "name")
+	@Mapping(source = "joinPassword", target = "joinPassword")
+	@Mapping(target = "members", ignore = true)
+	Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
+
+	@Mapping(source = "name", target = "name")
+	@Mapping(source = "groupId", target = "groupId")
+	GroupGetDTO convertEntityToGroupGetDTO(Group group);
 }

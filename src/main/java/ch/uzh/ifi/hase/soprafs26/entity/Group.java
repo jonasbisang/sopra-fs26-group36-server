@@ -14,7 +14,7 @@ public class Group implements Serializable {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String groupname;
+    private String name;
 
     @Column(nullable = false)
     private String joinPassword; //BCrypt hash in Service!
@@ -24,8 +24,8 @@ public class Group implements Serializable {
 
     public Long getId() { return id; }
     public void setId(Long id ) { this.id = id; }
-    public String getGroupname() { return groupname; }
-    public void setGroupname(String groupname) { this.groupname = groupname; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public String getJoinPassword() { return joinPassword; }
     public void setJoinPassword(String joinPassword) {this.joinPassword = joinPassword; }
     public List<GroupMember> getMembers() {return members; }

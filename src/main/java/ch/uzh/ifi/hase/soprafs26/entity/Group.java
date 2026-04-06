@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity 
 @Table(name = "friend_groups")
-public class FriendGroup implements Serializable {
+public class Group implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id 

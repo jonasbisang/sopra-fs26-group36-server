@@ -39,9 +39,9 @@ public interface DTOMapper {
 	@Mapping(source = "name", target = "name")
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
-	UserGetDTO convertEntityToUserGetDTO(User user);
+	UserGetDTO convertEntityToUserGetDTO(User user); //token and email missing?
 
-	//convertUserPutDTOtoEntity is missing!!
+	//convertUserPutDTOtoEntity is missing
 
 	@Mapping(target = "groupId", ignore = true)
 	@Mapping(source = "name", target = "name")

@@ -6,12 +6,12 @@ import java.util.List;
 
 @Entity 
 @Table(name = "friend_groups")
-public class Group implements Serializable {
+public class Group implements Serializable { //maybe change Group to FriendGroup for no SQL confusion?
     private static final long serialVersionUID = 1L;
 
     @Id 
     @GeneratedValue 
-    private Long id;
+    private Long groupId; //maybe change to Id?
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -22,8 +22,8 @@ public class Group implements Serializable {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupMember> members = new ArrayList<>();
 
-    public Long getId() { return id; }
-    public void setId(Long id ) { this.id = id; }
+    public Long getGroupId() { return groupId; }
+    public void setGroupId(Long groupId ) { this.groupId = groupId; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getJoinPassword() { return joinPassword; }

@@ -16,7 +16,7 @@ public class Group implements Serializable { //maybe change Group to FriendGroup
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String joinPassword; //BCrypt hash in Service!
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -132,10 +132,7 @@ public class UserService {
     }
     user.setPassword(newPassword);
     userRepository.save(user);
-	}// i think this doesnt work bc password is encoded -> first decode, then compare? 
-	// maybe smth like this? 		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-	//		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Old password is incorrect");
-	//	}
+	}
 
 	public void changeUsername(Long id, String token, String newUsername) {
     User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));

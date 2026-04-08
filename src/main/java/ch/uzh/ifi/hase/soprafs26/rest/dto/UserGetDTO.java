@@ -11,6 +11,7 @@ public class UserGetDTO {
 	private String username;
 	private String token;
 	private UserStatus status;
+	//email?
 
 	public Long getId() {
 		return id;

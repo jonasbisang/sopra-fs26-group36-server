@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
@@ -9,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,5 +92,11 @@ public class UserController {
         @RequestHeader("Authorization") String token,
         @RequestBody UserPutDTO userPutDTO) {
     	userService.deleteUser(id, token, userPutDTO.getOldPassword());
+}
+
+	@PostMapping("/users/{Id}/unavailability")
+	public ResponseEntity<Unavailability> addUnavailability(@PathVariable Long userId, @RequestBody Unavailability unavailability) {
+		Unavailability saved = userService.addUnavailability(userId, unavailability);
+		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 }
 }

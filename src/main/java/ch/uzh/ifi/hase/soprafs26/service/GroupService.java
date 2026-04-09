@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Transactional
@@ -28,16 +29,16 @@ public class GroupService {
         this.userRepository = userRepository;
     }
 
-    public Group createGroup(Group newGroup, String token) {
+    public Group createGroup(Group newGroup, String token) { //maybe add userID because frontend specified
         User creator = userRepository.findByToken(token);
         if (creator == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
         }
-        if (groupRepository.existsByName(newGroup.getName())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Group name is already taken");
-        }
         if (newGroup.getName() == null || newGroup.getName().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group name cannot be empty");
+        }
+                if (groupRepository.existsByName(newGroup.getName())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Group name is already taken");
         }
         if (newGroup.getJoinPassword() != null && !newGroup.getJoinPassword().isEmpty()) {
             newGroup.setJoinPassword(passwordEncoder.encode(newGroup.getJoinPassword()));
@@ -55,5 +56,50 @@ public class GroupService {
 
         return savedGroup;
     }
+    public GroupMember joinGroup(Long groupId, String joinPassword, String token) {
+        User user = userRepository.findByToken(token);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
+        Group group = groupRepository.findById(groupId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group doesn't exist"));
 
+        if (groupMemberRepository.findByGroupAndUser(group, user) != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already member enrolled");
+        }
+        if (group.getJoinPassword() != null ) {
+            if (!passwordEncoder.matches(joinPassword, group.getJoinPassword())) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong group password");
+            }
+        }
+        GroupMember newMember = new GroupMember();
+        newMember.setUser(user);
+        newMember.setGroup(group);
+        newMember.setRole(RoleType.MEMBER); 
+        newMember.setJoinDate(LocalDate.now());
+
+        groupMemberRepository.save( newMember);
+        groupMemberRepository.flush();
+        return newMember;
+    }
+    
+    public void leaveGroup(Long groupId, String token) {
+        User user = userRepository.findByToken(token); 
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not logged in");
+        }
+        Group group = groupRepository.findById(groupId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group doesn't exist"));
+        GroupMember member = groupMemberRepository.findByGroupAndUser(group, user);
+        if (member == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not a member");
+        }
+        if (member.getRole() == RoleType.ADMIN) {
+            List<GroupMember> admins = groupMemberRepository.findByGroupAndRole(group, RoleType.ADMIN);
+            if (admins.size() <= 1 ) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are the only admin. Make another member admin before leaving.");
+            }       
+        }
+        
+        groupMemberRepository.delete(member);
+        groupMemberRepository.flush();
+    }
 }

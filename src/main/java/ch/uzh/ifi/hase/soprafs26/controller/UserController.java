@@ -95,8 +95,8 @@ public class UserController {
 }
 
 	@PostMapping("/users/{Id}/unavailability")
-	public ResponseEntity<Unavailability> addUnavailability(@PathVariable Long userId, @RequestBody Unavailability unavailability) {
-		Unavailability saved = userService.addUnavailability(userId, unavailability);
+	public ResponseEntity<Unavailability> addUnavailability(@PathVariable Long usesrId, @RequestBody Unavailability unavailability) {
+		Unavailability saved = userService.addUnavailability(Id, unavailability);
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 }
 }

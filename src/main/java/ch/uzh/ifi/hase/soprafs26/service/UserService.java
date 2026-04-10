@@ -175,4 +175,12 @@ public class UserService {
     return unavailabilityRepository.save(unavailability);
 	}
 
+	public void verifyToken(String token, Long Id) {
+		User user = userRepository.findById(Id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+		if (!user.getToken().equals(token)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+		}
+	}
+
 }

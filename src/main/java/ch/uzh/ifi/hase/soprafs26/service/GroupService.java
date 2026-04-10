@@ -29,7 +29,7 @@ public class GroupService {
         this.userRepository = userRepository;
     }
 
-    public Group createGroup(Group newGroup, String token) { //maybe add userID because frontend specified
+    public Group createGroup(Group newGroup, String token) { 
         User creator = userRepository.findByToken(token);
         if (creator == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
@@ -82,7 +82,7 @@ public class GroupService {
         return newMember;
     }
     
-    public void leaveGroup(Long groupId, String token) {
+    public void leaveGroup(Long groupId,  Long userId, String token) { // userID is unneccessary but its in spec 
         User user = userRepository.findByToken(token); 
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not logged in");

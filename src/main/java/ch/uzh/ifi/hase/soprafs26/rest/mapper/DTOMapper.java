@@ -6,6 +6,9 @@ import org.mapstruct.factory.Mappers;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
 
 /**
  * DTOMapper
@@ -38,4 +41,15 @@ public interface DTOMapper {
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
 	UserGetDTO convertEntityToUserGetDTO(User user);
+
+	@Mapping(source = "startDateTime", target = "startDateTime")
+	@Mapping(source = "endDateTime", target = "endDateTime")
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "user", ignore = true)
+	Unavailability convertUnavailabilityPostDTOtoEntity(UnavailabilityPostDTO unavailabilityPostDTO);
+
+	@Mapping(source = "id", target = "id")
+	@Mapping(source = "startDateTime", target = "startDateTime")
+	@Mapping(source = "endDateTime", target = "endDateTime")
+	UnavailabilityGetDTO convertEntityToUnavailabilityGetDTO(Unavailability unavailability);
 }

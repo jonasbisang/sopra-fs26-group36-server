@@ -127,10 +127,10 @@ public class UserService {
 	public void changePassword(Long id, String oldPassword, String newPassword) {
     User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-    if (!user.getPassword().equals(oldPassword)) {
+    if (!passwordEncoder.matches(oldPassword, user.getPassword())){
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Old password is incorrect");
     }
-    user.setPassword(newPassword);
+    user.setPassword(passwordEncoder.encode(newPassword));
     userRepository.save(user);
 	}
 

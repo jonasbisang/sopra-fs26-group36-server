@@ -51,6 +51,12 @@ public class User implements Serializable {
 	@Column(nullable = false)
 	private LocalDate creationDate;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Unavailability> unavailabilities;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private GoogleCalendarToken googleCalendarToken;
+
 	public Long getId() {
 		return id;
 	}

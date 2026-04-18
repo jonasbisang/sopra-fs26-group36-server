@@ -44,8 +44,14 @@ public class GroupController {
 
     @DeleteMapping("/groups/{groupId}/members/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) 
-    public void leaveGroup(@PathVariable Long groupId, @PathVariable Long userId,  @RequestHeader("Authorization") String token) {
-        groupService.leaveGroup(groupId, userId, token);
+    public void removeMember(@PathVariable Long groupId, @PathVariable Long userId,  @RequestHeader("Authorization") String token) {
+        groupService.removeMember(groupId, userId, token);
+    }
+
+    @PutMapping("/groups/{groupId}/members/{userId}/role") // no RoleUpdateDTO implemented (not needed for now)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void promoteMember(@PathVariable Long groupId, @PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        groupService.promoteMember(groupId, userId, token);
     }
 
 }

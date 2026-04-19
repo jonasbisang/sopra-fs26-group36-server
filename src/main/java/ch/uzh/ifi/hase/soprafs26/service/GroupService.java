@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,7 +120,7 @@ public class GroupService {
         if (admin == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin isn't logged in");
         }
-        User member = userRepository.findById(memberId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User to be promoted doesn't exist"));
+        User member = userRepository.findById(memberId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User to be promoted not doesn't exist"));
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "This group does not exist."));
         GroupMember groupAdmin = groupMemberRepository.findByGroupAndUser(group, admin);
         GroupMember groupMember = groupMemberRepository.findByGroupAndUser(group, member);
@@ -155,5 +156,38 @@ public class GroupService {
         }
         groupMemberRepository.delete(groupMember);
         groupMemberRepository.flush();
+    }
+
+    public void deleteGroup(Long groupId, String token) {
+        User admin = userRepository.findByToken(token);
+        if (admin == null ) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
+        Group group = groupRepository.findById(groupId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group doesn't exist"));
+        GroupMember groupAdmin = groupMemberRepository.findByGroupAndUser(group, admin);
+        if (groupAdmin == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not part of the group");
+        }
+        if (groupAdmin.getRole() != RoleType.ADMIN){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Only admins can delete group.");
+        }
+        groupRepository.delete(group);
+        groupRepository.flush();
+    }
+    public void changeGroupPassword(Long groupId, String oldPassword, String newPassword, String token) {
+        User admin = userRepository.findByToken(token);
+        if (admin == null) { throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in"); }
+        Group group = groupRepository.findById(groupId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group doesn't exist")); 
+        GroupMember groupAdmin = groupMemberRepository.findByGroupAndUser(group, admin);
+        if (groupAdmin == null || groupAdmin.getRole() != RoleType.ADMIN) { throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admin can change group password"); }
+        if (!passwordEncoder.matches(oldPassword, group.getJoinPassword())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Old password is incorrect");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change to an empty password");
+        }
+        group.setJoinPassword(passwordEncoder.encode(newPassword));
+        groupRepository.save(group);
+        groupRepository.flush();
     }
 }

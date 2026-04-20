@@ -11,13 +11,19 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDateTime;
 
 public class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
+	@Mock
+	private UnavailabilityRepository unavailabilityRepository;
 
 	@InjectMocks
 	private UserService userService;
@@ -96,5 +102,32 @@ public class UserServiceTest {
 
 		assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
 }
+	@Test
+	public void addUnavailability_validInputs_success() {
+		Unavailability unavailability = new Unavailability();
+		unavailability.setStartDateTime(LocalDateTime.of(2026, 5, 1, 9, 0));
+		unavailability.setEndDateTime(LocalDateTime.of(2026, 5, 1, 17, 0));
+
+		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+		Mockito.when(unavailabilityRepository.save(Mockito.any())).thenReturn(unavailability);
+
+		Unavailability result = userService.addUnavailability(1L, unavailability);
+
+		Mockito.verify(unavailabilityRepository, Mockito.times(1)).save(Mockito.any());
+		assertEquals(testUser, unavailability.getUser());
+		assertEquals(unavailability.getStartDateTime(), result.getStartDateTime());
+		assertEquals(unavailability.getEndDateTime(), result.getEndDateTime());
+	}
+
+	@Test
+	public void addUnavailability_userNotFound_throwsException() {
+		Unavailability unavailability = new Unavailability();
+		unavailability.setStartDateTime(LocalDateTime.of(2026, 5, 1, 9, 0));
+		unavailability.setEndDateTime(LocalDateTime.of(2026, 5, 1, 17, 0));
+
+		Mockito.when(userRepository.findById(99L)).thenReturn(java.util.Optional.empty());
+
+		assertThrows(ResponseStatusException.class, () -> userService.addUnavailability(99L, unavailability));
+	}
 
 }

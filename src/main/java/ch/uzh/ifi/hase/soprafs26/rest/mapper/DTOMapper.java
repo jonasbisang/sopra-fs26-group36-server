@@ -8,7 +8,10 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
-import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
+
 /**
  * DTOMapper
  * This class is responsible for generating classes that will automatically
@@ -39,6 +42,20 @@ public interface DTOMapper {
 	@Mapping(source = "name", target = "name")
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
+	UserGetDTO convertEntityToUserGetDTO(User user);
+
+	@Mapping(source = "startDateTime", target = "startDateTime")
+	@Mapping(source = "endDateTime", target = "endDateTime")
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "user", ignore = true)
+	Unavailability convertUnavailabilityPostDTOtoEntity(UnavailabilityPostDTO unavailabilityPostDTO);
+
+	@Mapping(source = "id", target = "id")
+	@Mapping(source = "startDateTime", target = "startDateTime")
+	@Mapping(source = "endDateTime", target = "endDateTime")
+	UnavailabilityGetDTO convertEntityToUnavailabilityGetDTO(Unavailability unavailability);
+}
+
 	UserGetDTO convertEntityToUserGetDTO(User user); //token and email missing?
 
 	//convertUserPutDTOtoEntity is missing

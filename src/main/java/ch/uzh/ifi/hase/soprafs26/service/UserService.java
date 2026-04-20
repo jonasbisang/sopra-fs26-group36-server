@@ -175,6 +175,11 @@ public class UserService {
     return unavailabilityRepository.save(unavailability);
 	}
 
+
+	public List<Unavailability> getUnavailabilities(Long userId) {
+    return unavailabilityRepository.findByUserId(userId);
+	}
+
 	public void verifyToken(String token, Long Id) {
 		User user = userRepository.findById(Id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));

@@ -108,3 +108,18 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(DTOMapper.INSTANCE.convertEntityToUnavailabilityGetDTO(saved));
 }
 }
+
+
+	@GetMapping("/users/{id}/unavailability")
+	@ResponseStatus(HttpStatus.OK)
+	public List<UnavailabilityGetDTO> getUnavailabilities(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token) {
+    	userService.verifyToken(token, id);
+    	List<Unavailability> unavailabilities = userService.getUnavailabilities(id);
+    	List<UnavailabilityGetDTO> result = new ArrayList<>();
+    	for (Unavailability u : unavailabilities) {
+    	    result.add(DTOMapper.INSTANCE.convertEntityToUnavailabilityGetDTO(u));
+    	}
+    	return result;
+	}

@@ -54,9 +54,7 @@ public interface DTOMapper {
 	@Mapping(source = "startDateTime", target = "startDateTime")
 	@Mapping(source = "endDateTime", target = "endDateTime")
 	UnavailabilityGetDTO convertEntityToUnavailabilityGetDTO(Unavailability unavailability);
-}
 
-	UserGetDTO convertEntityToUserGetDTO(User user); //token and email missing?
 
 	//convertUserPutDTOtoEntity is missing
 
@@ -70,3 +68,5 @@ public interface DTOMapper {
 	@Mapping(source = "groupId", target = "groupId")
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
 }
+
+

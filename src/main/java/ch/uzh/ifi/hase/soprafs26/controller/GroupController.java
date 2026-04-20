@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.controller;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPasswordDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.JoinGroupDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
@@ -44,8 +45,25 @@ public class GroupController {
 
     @DeleteMapping("/groups/{groupId}/members/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) 
-    public void leaveGroup(@PathVariable Long groupId, @PathVariable Long userId,  @RequestHeader("Authorization") String token) {
-        groupService.leaveGroup(groupId, userId, token);
+    public void removeMember(@PathVariable Long groupId, @PathVariable Long userId,  @RequestHeader("Authorization") String token) {
+        groupService.removeMember(groupId, userId, token);
     }
 
+    @PutMapping("/groups/{groupId}/members/{userId}/role") // no RoleUpdateDTO implemented (not needed for now)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void promoteMember(@PathVariable Long groupId, @PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        groupService.promoteMember(groupId, userId, token);
+    }
+
+    @PutMapping("/groups/{groupId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changeGroupPassword(@PathVariable Long groupId, @RequestBody GroupPasswordDTO groupPasswordDTO, @RequestHeader("Authorization") String token) {
+        groupService.changeGroupPassword(groupId, groupPasswordDTO.getOldPassword(), groupPasswordDTO.getNewPassword(), token);
+    }
+
+    @DeleteMapping("/groups/{groupId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteGroup(@PathVariable Long groupId, @RequestHeader("Authorization") String token) {
+        groupService.deleteGroup(groupId, token);
+    }
 }

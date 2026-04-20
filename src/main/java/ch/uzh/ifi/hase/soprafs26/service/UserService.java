@@ -188,4 +188,9 @@ public class UserService {
 		}
 	}
 
+	public void deleteAllUnavailabilities(Long userId) {
+    	List<Unavailability> list = unavailabilityRepository.findByUserId(userId);
+    	unavailabilityRepository.deleteAll(list);
+}
+
 }

@@ -107,8 +107,6 @@ public class UserController {
 		Unavailability saved = userService.addUnavailability(Id, unavailability);
 		return ResponseEntity.status(HttpStatus.CREATED).body(DTOMapper.INSTANCE.convertEntityToUnavailabilityGetDTO(saved));
 }
-}
-
 
 	@GetMapping("/users/{id}/unavailability")
 	@ResponseStatus(HttpStatus.OK)
@@ -123,3 +121,14 @@ public class UserController {
     	}
     	return result;
 	}
+
+	@DeleteMapping("/users/{id}/unavailability")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteAllUnavailabilities(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String token) {
+    	userService.verifyToken(token, id);
+    	userService.deleteAllUnavailabilities(id);
+}
+}
+

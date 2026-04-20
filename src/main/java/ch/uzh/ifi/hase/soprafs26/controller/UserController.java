@@ -33,7 +33,7 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@PostMapping("/login")
+	@PostMapping("/users/login")
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public UserGetDTO loginUser (@RequestBody UserPostDTO userPostDTO) {
@@ -41,7 +41,7 @@ public class UserController {
 		User loggedInUser = userService.loginUser(userInput);
 		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
 	}
-	@PostMapping("/logout")
+	@PostMapping("/users/logout")
 	@ResponseStatus(HttpStatus.OK)
 	public void logoutUser(@RequestHeader("Authorization") String token) {
 		userService.logoutUser(token);
@@ -130,5 +130,13 @@ public class UserController {
     	userService.verifyToken(token, id);
     	userService.deleteAllUnavailabilities(id);
 }
+
+	@GetMapping("/users/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	@ResponseBody
+	public UserGetDTO getUserById(@PathVariable Long id) {
+    	User user = userService.getUserById(id);
+    	return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+}	
 }
 

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
+import ch.uzh.ifi.hase.soprafs26.constant.Weather;
 
 
 import java.io.Serializable;
@@ -44,7 +45,7 @@ public class Activity implements Serializable {
     @Column
 	private boolean isWeatherDependent;
 
-    @Enumerated(EnumType.String)
+    @Enumerated(EnumType.STRING)
     @Column(nullable=true)
     private Weather weather;
 

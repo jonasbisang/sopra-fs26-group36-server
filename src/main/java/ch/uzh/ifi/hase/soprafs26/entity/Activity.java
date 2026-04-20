@@ -44,6 +44,10 @@ public class Activity implements Serializable {
     @Column
 	private boolean isWeatherDependent;
 
+    @Enumerated(EnumType.String)
+    @Column(nullable=true)
+    private Weather weather;
+
     @Column
 	private String location;
 
@@ -127,7 +131,15 @@ public class Activity implements Serializable {
     }
 
     public void setWeatherDependent(boolean weatherDependent) {
-        isWeatherDependent = weatherDependent;
+        this.isWeatherDependent = weatherDependent;
+    }
+
+    public Weather getWeather() {
+        return weather;
+    }
+
+    public void setWeather(Weather weather) {
+        this.weather = weather;
     }
 
     public String getLocation() {
@@ -143,7 +155,7 @@ public class Activity implements Serializable {
     }
 
     public void setRecursive(boolean recursive) {
-        isRecursive = recursive;
+        this.isRecursive = recursive;
     }
 
     public ActivityStatus getStatus() {

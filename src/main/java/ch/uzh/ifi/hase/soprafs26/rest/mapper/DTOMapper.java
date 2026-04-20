@@ -42,6 +42,8 @@ public interface DTOMapper {
 	@Mapping(source = "name", target = "name")
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
+	@Mapping(source = "email", target = "email")   
+	@Mapping(source = "bio", target = "bio")
 	UserGetDTO convertEntityToUserGetDTO(User user);
 
 	@Mapping(source = "startDateTime", target = "startDateTime")

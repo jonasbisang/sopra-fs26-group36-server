@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,11 +33,14 @@ public class UserService {
 	private final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	private final UserRepository userRepository;
+	private final UnavailabilityRepository unavailabilityRepository;
 
 	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	public UserService(@Qualifier("userRepository") UserRepository userRepository) {
-		this.userRepository = userRepository;
+	public UserService(@Qualifier("userRepository") UserRepository userRepository,
+                   UnavailabilityRepository unavailabilityRepository) {
+    this.userRepository = userRepository;
+    this.unavailabilityRepository = unavailabilityRepository;
 	}
 
 	public List<User> getUsers() {
@@ -115,7 +120,7 @@ public class UserService {
 		String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
 		if (userByUsername != null && userByEmail != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					String.format(baseErrorMessage, "username and the name", "are"));
+					String.format(baseErrorMessage, "username and the email", "are"));
 		} else if (userByUsername != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
 		} else if (userByEmail != null) {
@@ -127,10 +132,10 @@ public class UserService {
 	public void changePassword(Long id, String oldPassword, String newPassword) {
     User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-    if (!user.getPassword().equals(oldPassword)) {
+    if (!passwordEncoder.matches(oldPassword, user.getPassword())){
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Old password is incorrect");
     }
-    user.setPassword(newPassword);
+    user.setPassword(passwordEncoder.encode(newPassword));
     userRepository.save(user);
 	}
 
@@ -161,6 +166,36 @@ public class UserService {
 
     userRepository.delete(user);
     userRepository.flush();
+	}
+
+	public Unavailability addUnavailability(Long userId, Unavailability unavailability) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    unavailability.setUser(user);
+    return unavailabilityRepository.save(unavailability);
+	}
+
+
+	public List<Unavailability> getUnavailabilities(Long userId) {
+    return unavailabilityRepository.findByUserId(userId);
+	}
+
+	public void verifyToken(String token, Long Id) {
+		User user = userRepository.findById(Id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+		if (!user.getToken().equals(token)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+		}
+	}
+
+	public void deleteAllUnavailabilities(Long userId) {
+    	List<Unavailability> list = unavailabilityRepository.findByUserId(userId);
+    	unavailabilityRepository.deleteAll(list);
+}
+
+public User getUserById(Long id) {
+    return userRepository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 }
 
 }

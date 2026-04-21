@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
+import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
@@ -29,6 +30,8 @@ public class ActivityService {
     public Activity createActivity(Activity newActivity, Long createdBy) {
     
         validateActivityInputs(newActivity);
+
+        parseTimeConditions(newActivity);
     
         User creator = userRepository.findById(createdBy)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + createdBy));
@@ -57,6 +60,30 @@ public class ActivityService {
 
         if (activity.getLocation() == null || activity.getLocation().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location is required!");
+        }
+    }
+
+    private void parseTimeConditions(Activity activity) {
+        TimeWindow preference = activity.getTimePreference();
+    
+        if (preference == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Time preference must be specified.");
+        }
+    
+        if (preference != TimeWindow.CUSTOM) {
+            activity.setStartTime(preference.getStartTime());
+            activity.setEndTime(preference.getEndTime());
+        } 
+        else {
+            if (activity.getStartTime() == null || activity.getEndTime() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Custom time slots require both a start and end time.");
+            }
+            
+            if (!activity.getStartTime().isBefore(activity.getEndTime())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Start time must be before end time for custom slots.");
+            }
         }
     }
 }

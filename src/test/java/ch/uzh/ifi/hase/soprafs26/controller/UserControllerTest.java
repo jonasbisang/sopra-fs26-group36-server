@@ -50,6 +50,9 @@ public class UserControllerTest {
 	@MockitoBean
 	private UserService userService;
 
+	@MockitoBean
+	private ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository groupMemberRepository; 
+
 	@Test
 	public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
 		// given
@@ -74,6 +77,8 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$[0].username", is(user.getUsername())))
 				.andExpect(jsonPath("$[0].status", is(user.getStatus().toString())));
 	}
+
+	
 
 	@Test
 	public void createUser_validInput_userCreated() throws Exception {

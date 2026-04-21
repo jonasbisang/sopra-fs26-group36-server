@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -189,5 +190,19 @@ public class GroupService {
         group.setJoinPassword(passwordEncoder.encode(newPassword));
         groupRepository.save(group);
         groupRepository.flush();
+    }
+
+    public List<Group> getGroupsByUser(Long userId, String token) { //might want to add constraint that you can only see the groups of users in the same group as you
+        User user = userRepository.findByToken(token); 
+        if (user == null ) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
+        User targetUser = userRepository.findById(userId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "The searched user not found."));
+        List<GroupMember> memberships = groupMemberRepository.findByUser(targetUser);
+        List<Group> groups = new ArrayList<>();
+        for (GroupMember membership : memberships) {
+            groups.add(membership.getGroup());
+        }
+        return groups;
     }
 }

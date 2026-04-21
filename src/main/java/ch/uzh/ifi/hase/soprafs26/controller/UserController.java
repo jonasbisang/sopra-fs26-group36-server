@@ -33,7 +33,7 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@PostMapping("/users/login")
+	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public UserGetDTO loginUser (@RequestBody UserPostDTO userPostDTO) {

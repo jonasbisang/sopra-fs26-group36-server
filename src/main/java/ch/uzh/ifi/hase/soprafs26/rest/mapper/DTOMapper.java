@@ -8,10 +8,16 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
+<<<<<<< HEAD
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
 
+=======
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
+import ch.uzh.ifi.hase.soprafs26.entity.Activity;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
+>>>>>>> DevTask-#133
 /**
  * DTOMapper
  * This class is responsible for generating classes that will automatically
@@ -73,3 +79,19 @@ public interface DTOMapper {
 }
 
 
+
+	@Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "minSize", target = "minSize")
+    @Mapping(source = "maxSize", target = "maxSize")
+    @Mapping(source = "duration", target = "duration")
+    @Mapping(source = "timePreference", target = "timePreference")
+    @Mapping(source = "startTime", target = "startTime")
+    @Mapping(source = "endTime", target = "endTime")
+    @Mapping(source = "isWeatherDependent", target = "weatherDependent")
+    @Mapping(source = "weather", target = "weather")
+    @Mapping(source = "location", target = "location")
+    @Mapping(source = "isRecursive", target = "recursive")
+    Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
+}

@@ -13,6 +13,9 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.entity.GroupMember;
+import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +30,13 @@ import java.util.List;
 @RestController
 public class UserController {
 
-	private final UserService userService;
+		private final UserService userService;
+		private final GroupMemberRepository groupMemberRepository;
 
-	UserController(UserService userService) {
-		this.userService = userService;
-	}
+			UserController(UserService userService, GroupMemberRepository groupMemberRepository) {
+    				this.userService = userService;
+    				this.groupMemberRepository = groupMemberRepository;
+			}
 
 	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
@@ -138,5 +143,23 @@ public class UserController {
     	User user = userService.getUserById(id);
     	return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
 }	
+
+
+	@GetMapping("/users/{id}/groups")
+	@ResponseStatus(HttpStatus.OK)
+	public List<GroupGetDTO> getGroupsForUser(
+    	@PathVariable Long id,
+    	@RequestHeader("Authorization") String token) {
+    
+    List<GroupMember> memberships = groupMemberRepository.findByUserId(id);
+    List<GroupGetDTO> result = new ArrayList<>();
+    for (GroupMember gm : memberships) {
+        GroupGetDTO dto = DTOMapper.INSTANCE.convertEntityToGroupGetDTO(gm.getGroup());
+        dto.setMembers(groupMemberRepository.findByGroup(gm.getGroup()).size());
+        result.add(dto);
+    }
+    return result;
 }
+}
+
 

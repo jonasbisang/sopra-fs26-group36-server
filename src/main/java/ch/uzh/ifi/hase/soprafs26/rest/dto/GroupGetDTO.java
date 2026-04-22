@@ -1,12 +1,16 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
 public class GroupGetDTO {
-    private Long groupId; 
+    private Long id;
     private String name;
+    private int members;
 
-    public Long getGroupId() {return groupId;}
-    public void setGroupId(Long groupId) {this.groupId = groupId;}
-    public String getName() {return name; }
-    public void setName(String name) {this.name = name;}
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getMembers() { return members; }
+    public void setMembers(int members) { this.members = members; }
 }

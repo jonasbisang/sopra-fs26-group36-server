@@ -11,6 +11,7 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityGetDTO;
 /**
  * DTOMapper
  * This class is responsible for generating classes that will automatically
@@ -68,5 +69,15 @@ public interface DTOMapper {
     @Mapping(source = "weather", target = "weather")
     @Mapping(source = "location", target = "location")
     @Mapping(source = "isRecursive", target = "recursive")
+    @Mapping(target = "status", ignore = true) 
+    @Mapping(target = "group", ignore = true)  
     Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
+
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdBy.id", target = "creatorId")
+    @Mapping(source = "group.groupId", target = "groupId")
+    @Mapping(source = "weatherDependent", target = "isWeatherDependent")
+    @Mapping(source = "recursive", target = "isRecursive")
+    ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }

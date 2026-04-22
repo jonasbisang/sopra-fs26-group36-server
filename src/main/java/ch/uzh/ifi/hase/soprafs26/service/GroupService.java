@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import java.util.stream.Collectors;
 import ch.uzh.ifi.hase.soprafs26.constant.RoleType;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.GroupMember;
@@ -189,5 +190,13 @@ public class GroupService {
         group.setJoinPassword(passwordEncoder.encode(newPassword));
         groupRepository.save(group);
         groupRepository.flush();
+    }
+
+    public List<User> getGroupMembers(Long groupId, String token) {
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+    return group.getMembers().stream()
+            .map(GroupMember::getUser)
+            .collect(Collectors.toList());
     }
 }

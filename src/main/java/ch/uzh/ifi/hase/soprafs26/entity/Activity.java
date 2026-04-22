@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.Weather;
-import ch.uzh.ifi.hase.soprafs26.entity.Group;
 
 import java.io.Serializable;
 import java.time.LocalTime;

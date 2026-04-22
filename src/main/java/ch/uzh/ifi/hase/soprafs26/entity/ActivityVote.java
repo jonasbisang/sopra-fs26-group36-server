@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 
 
 @Entity

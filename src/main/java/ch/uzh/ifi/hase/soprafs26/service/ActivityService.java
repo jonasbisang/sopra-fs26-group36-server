@@ -16,25 +16,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
+    private final ActivityVoteRepository activityVoteRepository;
+    private final GroupRepository groupRepository;
 
     @Autowired
     public ActivityService(@Qualifier("activityRepository") ActivityRepository activityRepository,
-                           @Qualifier("userRepository") UserRepository userRepository) {
-        this.activityRepository = activityRepository;
-        this.userRepository = userRepository;
-    }
+                       @Qualifier("userRepository") UserRepository userRepository,
+                       ActivityVoteRepository activityVoteRepository,
+                       GroupRepository groupRepository) {
+    this.activityRepository = activityRepository;
+    this.userRepository = userRepository;
+    this.activityVoteRepository = activityVoteRepository;
+    this.groupRepository = groupRepository;
+}
 
-    public Activity createActivity(Activity newActivity, Long createdBy) {
+public Activity createActivity(Activity newActivity, Long createdBy, Long groupId) {
+
+    validateActivityInputs(newActivity);
     
-        validateActivityInputs(newActivity);
-    
-        User creator = userRepository.findById(createdBy)
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+    newActivity.setGroup(group);
+    User creator = userRepository.findById(createdBy)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + createdBy));
         
         newActivity.setCreatedBy(creator);
@@ -58,9 +70,32 @@ public class ActivityService {
         if (activity.getStartTime().isAfter(activity.getEndTime())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time must be before end time!");
         }
+    }
 
-        if (activity.getLocation() == null || activity.getLocation().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location is required!");
-        }
+
+    public List<Activity> getActivities(Long groupId) {
+    groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+    return activityRepository.findByGroupGroupId(groupId);
+    }
+
+    public void vote(Long groupId, Long activityId, boolean wantsToJoin, Long userId) {
+    Activity activity = activityRepository.findById(activityId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+
+    if (!activity.getGroup().getGroupId().equals(groupId)) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity does not belong to this group");}
+
+    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already voted on this activity");}
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    ActivityVote vote = new ActivityVote();
+    vote.setActivity(activity);
+    vote.setUser(user);
+    vote.setWantsToJoin(wantsToJoin);
+    activityVoteRepository.save(vote);
     }
 }

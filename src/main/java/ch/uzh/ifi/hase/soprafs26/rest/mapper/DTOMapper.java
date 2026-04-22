@@ -8,27 +8,16 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
-<<<<<<< HEAD
-import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
 
-=======
+
+
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
->>>>>>> DevTask-#133
-/**
- * DTOMapper
- * This class is responsible for generating classes that will automatically
- * transform/map the internal representation
- * of an entity (e.g., the User) to the external/API representation (e.g.,
- * UserGetDTO for getting, UserPostDTO for creating)
- * and vice versa.
- * Additional mappers can be defined for new entities.
- * Always created one mapper for getting information (GET) and one mapper for
- * creating information (POST).
- */
+
 @Mapper
 public interface DTOMapper {
 
@@ -76,10 +65,7 @@ public interface DTOMapper {
 	@Mapping(source = "name", target = "name")
 	@Mapping(target = "members", ignore = true)
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
-}
-
-
-
+	
 	@Mapping(target = "id", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(source = "name", target = "name")
@@ -94,4 +80,12 @@ public interface DTOMapper {
     @Mapping(source = "location", target = "location")
     @Mapping(source = "isRecursive", target = "recursive")
     Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
+
 }
+
+
+
+
+
+
+

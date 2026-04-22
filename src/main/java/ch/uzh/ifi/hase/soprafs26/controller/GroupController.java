@@ -10,6 +10,11 @@ import ch.uzh.ifi.hase.soprafs26.service.GroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.entity.GroupMember;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class GroupController {
@@ -65,5 +70,16 @@ public class GroupController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGroup(@PathVariable Long groupId, @RequestHeader("Authorization") String token) {
         groupService.deleteGroup(groupId, token);
+    }
+
+    @GetMapping("/groups/{groupId}/members")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<UserGetDTO> getGroupMembers(@PathVariable Long groupId,
+                                        @RequestHeader("Authorization") String token) {
+    List<User> members = groupService.getGroupMembers(groupId, token);
+    return members.stream()
+            .map(DTOMapper.INSTANCE::convertEntityToUserGetDTO)
+            .collect(Collectors.toList());
     }
 }

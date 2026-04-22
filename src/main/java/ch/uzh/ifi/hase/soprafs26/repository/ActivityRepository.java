@@ -11,6 +11,8 @@ import java.util.List;
 
 @Repository("activityRepository")
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
+
+    List<Activity> findByGroupGroupId(Long groupId);
     
     List<Activity> findByCreatedBy(User createdBy);
 

@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.Weather;
-
+import ch.uzh.ifi.hase.soprafs26.entity.Group;
 
 import java.io.Serializable;
 import java.time.LocalTime;
@@ -62,6 +62,9 @@ public class Activity implements Serializable {
     @JoinColumn(name = "creator_id")
 	private User createdBy;
 
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     public Long getId() {
         return id;
@@ -174,4 +177,10 @@ public class Activity implements Serializable {
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
     }
+
+    public Group getGroup() { 
+        return group; }
+
+    public void setGroup(Group group) {
+         this.group = group; }
 }

@@ -62,6 +62,10 @@ public class Activity implements Serializable {
     @JoinColumn(name = "creator_id")
 	private User createdBy;
 
+    @ManyToOne
+    @JoinColumn(name = "group_id") // This creates a 'group_id' column in your activity table
+    private Group group;
+
 
     public Long getId() {
         return id;
@@ -173,5 +177,13 @@ public class Activity implements Serializable {
 
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Group getGroup() { 
+        return group; 
+    }
+
+    public void setGroup(Group group) { 
+        this.group = group; 
     }
 }

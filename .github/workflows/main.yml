@@ -43,6 +43,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Inject secrets into app.yaml
+        run: |
+          echo "  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}" >> app.yaml
+          echo "  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}" >> app.yaml
+          echo "  GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}" >> app.yaml
+
+
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v0.2.0

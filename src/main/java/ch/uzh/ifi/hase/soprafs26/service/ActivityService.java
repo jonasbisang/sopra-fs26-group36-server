@@ -39,11 +39,12 @@ public class ActivityService {
     this.groupRepository = groupRepository;
 }
 
-public Activity createActivity(Activity newActivity, Long createdBy, Long groupId) {
 
+    public Activity createActivity(Activity newActivity, Long createdBy, Long targetGroupId) {
+    
     validateActivityInputs(newActivity);
     
-    Group group = groupRepository.findById(groupId)
+    Group group = groupRepository.findById(targetGroupId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
 
     newActivity.setGroup(group);
@@ -68,7 +69,7 @@ public Activity createActivity(Activity newActivity, Long createdBy, Long groupI
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum size must be at least 1!");
         }
 
-        if (activity.getStartTime().isAfter(activity.getEndTime())) {
+        if (activity.getStartTime() != null && activity.getEndTime() != null && activity.getStartTime().isAfter(activity.getEndTime())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time must be before end time!");
         }
     }
@@ -122,5 +123,14 @@ public Activity createActivity(Activity newActivity, Long createdBy, Long groupI
                     "Start time must be before end time for custom slots.");
             }
         }
+    }
+
+    public List<Activity> getProposedActivitiesByGroupId(Long groupId) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found with ID: " + groupId));
+    
+        List<Activity> activities = activityRepository.findByGroupGroupId(groupId);
+    
+        return activities;
     }
 }

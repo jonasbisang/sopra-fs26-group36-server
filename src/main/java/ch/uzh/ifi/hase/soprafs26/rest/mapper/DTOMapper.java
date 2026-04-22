@@ -17,7 +17,18 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
-
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityGetDTO;
+/**
+ * DTOMapper
+ * This class is responsible for generating classes that will automatically
+ * transform/map the internal representation
+ * of an entity (e.g., the User) to the external/API representation (e.g.,
+ * UserGetDTO for getting, UserPostDTO for creating)
+ * and vice versa.
+ * Additional mappers can be defined for new entities.
+ * Always created one mapper for getting information (GET) and one mapper for
+ * creating information (POST).
+ */
 @Mapper
 public interface DTOMapper {
 
@@ -79,13 +90,15 @@ public interface DTOMapper {
     @Mapping(source = "weather", target = "weather")
     @Mapping(source = "location", target = "location")
     @Mapping(source = "isRecursive", target = "recursive")
+    @Mapping(target = "status", ignore = true) 
+    @Mapping(target = "group", ignore = true)  
     Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
 
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdBy.id", target = "creatorId")
+    @Mapping(source = "group.groupId", target = "groupId")
+    @Mapping(source = "weatherDependent", target = "isWeatherDependent")
+    @Mapping(source = "recursive", target = "isRecursive")
+    ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }
-
-
-
-
-
-
-

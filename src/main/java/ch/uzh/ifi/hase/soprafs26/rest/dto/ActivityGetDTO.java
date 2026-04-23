@@ -2,7 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
-import ch.uzh.ifi.hase.soprafs26.constant.Weather;
+import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 import java.time.LocalTime;
 
 public class ActivityGetDTO {
@@ -16,7 +16,9 @@ public class ActivityGetDTO {
     private LocalTime startTime;
     private LocalTime endTime;
     private Boolean isWeatherDependent;
-    private Weather weather;
+    private Integer minTemp;
+    private Integer maxTemp;
+    private RainPreference rainPreference;
     private String location;
     private Boolean isRecursive;
     private ActivityStatus status;
@@ -50,8 +52,14 @@ public class ActivityGetDTO {
     public Boolean getIsWeatherDependent() { return isWeatherDependent; }
     public void setIsWeatherDependent(Boolean isWeatherDependent) { this.isWeatherDependent = isWeatherDependent; }
 
-    public Weather getWeather() { return weather; }
-    public void setWeather(Weather weather) { this.weather = weather; }
+    public Integer getMinTemp() { return minTemp; }
+    public void setMinTemp(Integer minTemp) { this.minTemp = minTemp; }
+
+    public Integer getMaxTemp() { return maxTemp; }
+    public void setMaxTemp(Integer maxTemp) { this.maxTemp = maxTemp; }
+
+    public RainPreference getRainPreference() { return rainPreference; }
+    public void setRainPreference(RainPreference rainPreference) { this.rainPreference = rainPreference; }
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }

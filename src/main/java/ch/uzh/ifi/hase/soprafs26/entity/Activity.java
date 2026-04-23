@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
-import ch.uzh.ifi.hase.soprafs26.constant.Weather;
+import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 
 import java.io.Serializable;
 import java.time.LocalTime;
@@ -44,9 +44,15 @@ public class Activity implements Serializable {
     @Column
 	private boolean isWeatherDependent;
 
+    @Column
+	private int maxTemp;
+
+    @Column
+	private int minTemp;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable=true)
-    private Weather weather;
+    private RainPreference rainPreference;
 
     @Column
 	private String location;
@@ -137,12 +143,28 @@ public class Activity implements Serializable {
         this.isWeatherDependent = weatherDependent;
     }
 
-    public Weather getWeather() {
-        return weather;
+    public int getMaxTemp() {
+        return maxTemp;
     }
 
-    public void setWeather(Weather weather) {
-        this.weather = weather;
+    public void setMaxTemp(int maxTemp) {
+        this.maxTemp = maxTemp;
+    }
+
+    public int getMinTemp() {
+        return minTemp;
+    }
+
+    public void setMinTemp(int minTemp) {
+        this.minTemp = minTemp;
+    }
+
+    public RainPreference getRainPreference() {
+        return rainPreference;
+    }
+
+    public void setRainPreference(RainPreference rainPreference) {
+        this.rainPreference = rainPreference;
     }
 
     public String getLocation() {

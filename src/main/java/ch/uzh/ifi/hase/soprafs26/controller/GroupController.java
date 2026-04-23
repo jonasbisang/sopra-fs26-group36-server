@@ -86,7 +86,7 @@ public class GroupController {
             .collect(Collectors.toList());
      }
 
-    @GetMapping("/users/{userId}/groups")
+    @GetMapping("/groups/{groupId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public GroupGetDTO getGroup(@PathVariable Long groupId, @RequestHeader("Authorization") String token) {

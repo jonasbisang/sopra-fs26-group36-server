@@ -37,7 +37,7 @@ public class ActivityServiceTest {
     private ActivityRepository activityRepository;
 
     @Mock
-    privateA ActivityVoteRepository activityVoteRepository;
+    private ActivityVoteRepository activityVoteRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -46,9 +46,9 @@ public class ActivityServiceTest {
     private GroupRepository groupRepository;
 
 
-    private Activity tesActivity;
+    private Activity testActivity;
     private User testUser;
-    private Group TestGroup;
+    private Group testGroup;
 
 
     @BeforeEach
@@ -77,7 +77,14 @@ public class ActivityServiceTest {
 }
 
 @Test
+public void testVoteSuccess() {
+    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(1L);
+    Mockito.when(activityRepository.save(Mockito.any())).thenReturn(testActivity);
 
+    activityService.vote(1L,1L,true,1L);
+    System.out.println("testVoteSuccess - The status is" + testActivity.getStatus());
+    assertEquals(ActivityStatus.PENDING, testActivity.getStatus());
+}
 
 @Test
 

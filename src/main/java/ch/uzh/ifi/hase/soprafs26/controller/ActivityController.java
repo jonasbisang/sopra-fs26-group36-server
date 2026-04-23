@@ -33,23 +33,26 @@ public ActivityController(ActivityService activityService,
     activityService.createActivity(activityInput, activityPostDTO.getCreatedBy(), groupId);
 }
 
-  @GetMapping("/groups/{groupId}/activities")
+    @GetMapping("/groups/{groupId}/activities")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<ActivityGetDTO> getProposedActivities(@PathVariable Long groupId,
-                                                   @RequestParam(required = false) String status) {
-    List<Activity> activities;
-    if ("SCHEDULED".equals(status)) {
-        activities = activityService.getActivities(groupId);
-    } else {
-        activities = activityService.getProposedActivitiesByGroupId(groupId);
-    }
-    List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
-    for (Activity activity : activities) {
-        activityGetDTOs.add(DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity));
-    }
-    return activityGetDTOs;
-    }
+                                                @RequestParam(required = false) String status) {
+        List<Activity> activities;
+        if ("SCHEDULED".equals(status)) {
+            activities = activityService.getActivities(groupId);
+        } else {
+            activities = activityService.getProposedActivitiesByGroupId(groupId);
+        }
+        List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
+        for (Activity activity : activities) {
+            ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
+            long votes = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activity.getId());
+            dto.setAcceptVotes((int) votes);
+            activityGetDTOs.add(dto);
+        }
+        return activityGetDTOs;
+}
 
 @PostMapping("/groups/{groupId}/activities/{activityId}/votes")
 @ResponseStatus(HttpStatus.CREATED)

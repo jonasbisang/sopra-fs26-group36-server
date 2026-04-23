@@ -23,9 +23,8 @@ public class ActivityGetDTO {
     private Boolean isRecursive;
     private ActivityStatus status;
     private Long creatorId;
-    private Long groupId;  
-    private String scheduledTime;
-    
+    private Long groupId;
+    private Integer acceptVotes;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -78,6 +77,6 @@ public class ActivityGetDTO {
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
 
-    public String getScheduledTime() { return scheduledTime; }
-    public void setScheduledTime(String scheduledTime) { this.scheduledTime = scheduledTime; }
+    public Integer getAcceptVotes() { return acceptVotes; }
+    public void setAcceptVotes(Integer acceptVotes) { this.acceptVotes = acceptVotes; }
 }

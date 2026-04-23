@@ -105,5 +105,6 @@ public interface DTOMapper {
     @Mapping(source = "weatherDependent", target = "isWeatherDependent")
     @Mapping(source = "recursive", target = "isRecursive")
 	@Mapping(source = "scheduledTime", target = "scheduledTime")
+	@Mapping(target = "acceptVotes", ignore = true)
 	ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }

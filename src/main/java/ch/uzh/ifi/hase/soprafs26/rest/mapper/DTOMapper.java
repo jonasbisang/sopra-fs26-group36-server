@@ -75,6 +75,7 @@ public interface DTOMapper {
 	@Mapping(source = "groupId", target = "id")
 	@Mapping(source = "name", target = "name")
 	@Mapping(target = "members", ignore = true)
+	@Mapping(source = "adminId", target = "adminId")
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
 	
 	@Mapping(target = "id", ignore = true)
@@ -102,5 +103,5 @@ public interface DTOMapper {
     @Mapping(source = "group.groupId", target = "groupId")
     @Mapping(source = "weatherDependent", target = "isWeatherDependent")
     @Mapping(source = "recursive", target = "isRecursive")
-    ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
+	ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }

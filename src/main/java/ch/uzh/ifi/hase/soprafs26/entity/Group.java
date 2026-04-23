@@ -31,4 +31,11 @@ public class Group implements Serializable { //maybe change Group to FriendGroup
     public List<GroupMember> getMembers() {return members; }
     public void setMembers(List<GroupMember> members) {this.members = members; }
     
+    public Long getAdminId() {
+    return members.stream()
+        .filter(m -> m.getRole() == ch.uzh.ifi.hase.soprafs26.constant.RoleType.ADMIN)
+        .map(m -> m.getUser().getId())
+        .findFirst()
+        .orElse(null);
+}
 }

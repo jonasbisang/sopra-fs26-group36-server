@@ -85,6 +85,8 @@ public class GroupController {
     return members.stream()
             .map(DTOMapper.INSTANCE::convertEntityToUserGetDTO)
             .collect(Collectors.toList());
+     }
+
     @GetMapping("/users/{userId}/groups")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody

@@ -198,6 +198,8 @@ public class GroupService {
     return group.getMembers().stream()
             .map(GroupMember::getUser)
             .collect(Collectors.toList());
+    }
+    
     public List<Group> getGroupsByUser(Long userId, String token) { //might want to add constraint that you can only see the groups of users in the same group as you
         User user = userRepository.findByToken(token); 
         if (user == null ) {

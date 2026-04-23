@@ -78,7 +78,7 @@ public class ActivityService {
     public List<Activity> getActivities(Long groupId) {
     groupRepository.findById(groupId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
-    return activityRepository.findByGroupGroupId(groupId);
+    return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
     }
 
     public void vote(Long groupId, Long activityId, boolean wantsToJoin, Long userId) {
@@ -99,6 +99,12 @@ public class ActivityService {
     vote.setUser(user);
     vote.setWantsToJoin(wantsToJoin);
     activityVoteRepository.save(vote);
+    if (wantsToJoin) {
+        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+    if (acceptCount >= activity.getMinSize()) {
+        findSchedule(activity);
+            }
+        }
     }
 
     private void parseTimeConditions(Activity activity) {
@@ -129,8 +135,16 @@ public class ActivityService {
         groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found with ID: " + groupId));
     
-        List<Activity> activities = activityRepository.findByGroupGroupId(groupId);
+        List<Activity> activities = activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.PENDING);
     
         return activities;
     }
+
+
+
+    private void findSchedule(Activity activity) { // ACHTUNG GUYS JETZT TUEDS IMMER DIREKT SCHEDULE WILL D FUNCTION TO FEHLT, CHEGGED IHR
+    
+    activity.setStatus(ActivityStatus.SCHEDULED);
+    activityRepository.save(activity);
+}
 }

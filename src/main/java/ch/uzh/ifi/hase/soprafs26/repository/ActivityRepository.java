@@ -16,10 +16,10 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     
     List<Activity> findByCreatedBy(User createdBy);
 
-    List<Activity> findByGroupGroupId(Long groupId);
 
     List<Activity> findByStatus(ActivityStatus status);
 
     List<Activity> findByTimePreference(TimeWindow timePreference);
     
+    List<Activity> findByGroupGroupIdAndStatus(Long groupId, ActivityStatus status);
 }

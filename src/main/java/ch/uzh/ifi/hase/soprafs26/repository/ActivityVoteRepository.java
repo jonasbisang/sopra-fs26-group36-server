@@ -9,5 +9,8 @@ import java.util.List;
 @Repository
 public interface ActivityVoteRepository extends JpaRepository<ActivityVote, Long> {
     boolean existsByActivityIdAndUserId(Long activityId, Long userId);
+    long countByActivityIdAndWantsToJoinTrue(Long activityId);
+    
     List<ActivityVote> findByActivityId(Long activityId);
+    
 }

@@ -24,41 +24,39 @@ public ActivityController(ActivityService activityService,
     this.activityService = activityService;
     this.activityVoteRepository = activityVoteRepository;
 }
-
-@PostMapping("/groups/{groupId}/activities")
-@ResponseStatus(HttpStatus.CREATED)
-
-    @PostMapping("/activities")
+    @PostMapping("/groups/{groupId}/activities")
     @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    public void createActivity(@RequestBody ActivityPostDTO activityPostDTO) {
-        Activity activityInput = DTOMapper.INSTANCE.convertActivityPostDTOtoEntity(activityPostDTO);
-        
-        activityService.createActivity(activityInput, activityPostDTO.getCreatedBy(), activityPostDTO.getTargetGroupId());
-    }
+    public void createActivity(@PathVariable Long groupId,
+                           @RequestBody ActivityPostDTO activityPostDTO,
+                           @RequestHeader("Authorization") String token) {
+    Activity activityInput = DTOMapper.INSTANCE.convertActivityPostDTOtoEntity(activityPostDTO);
+    activityService.createActivity(activityInput, activityPostDTO.getCreatedBy(), groupId);
+}
 
-    @GetMapping("/groups/{groupId}/activities")
+  @GetMapping("/groups/{groupId}/activities")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<ActivityGetDTO> getProposedActivities(@PathVariable Long groupId) {
-        List<Activity> activities = activityService.getProposedActivitiesByGroupId(groupId);
-
-        List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
-        for (Activity activity : activities) {
-            activityGetDTOs.add(DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity));
-        }
-
-        return activityGetDTOs;
+    public List<ActivityGetDTO> getProposedActivities(@PathVariable Long groupId,
+                                                   @RequestParam(required = false) String status) {
+    List<Activity> activities;
+    if ("SCHEDULED".equals(status)) {
+        activities = activityService.getActivities(groupId);
+    } else {
+        activities = activityService.getProposedActivitiesByGroupId(groupId);
+    }
+    List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
+    for (Activity activity : activities) {
+        activityGetDTOs.add(DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity));
+    }
+    return activityGetDTOs;
     }
 
 @PostMapping("/groups/{groupId}/activities/{activityId}/votes")
 @ResponseStatus(HttpStatus.CREATED)
 public void vote(@PathVariable Long groupId,
                  @PathVariable Long activityId,
-                 @RequestBody ActivityVoteDTO dto,
-                 @RequestHeader("Authorization") String token) {
-    Long userId = Long.parseLong(token);
-    activityService.vote(groupId, activityId, dto.isWantsToJoin(), userId);
+                 @RequestBody ActivityVoteDTO dto) {
+    activityService.vote(groupId, activityId, dto.isWantsToJoin(), dto.getUserId());
 }
 
 }

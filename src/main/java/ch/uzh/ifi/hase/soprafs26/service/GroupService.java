@@ -199,7 +199,7 @@ public class GroupService {
             .map(GroupMember::getUser)
             .collect(Collectors.toList());
     }
-    
+            
     public List<Group> getGroupsByUser(Long userId, String token) { //might want to add constraint that you can only see the groups of users in the same group as you
         User user = userRepository.findByToken(token); 
         if (user == null ) {
@@ -212,8 +212,7 @@ public class GroupService {
         List<GroupMember> memberships = groupMemberRepository.findByUser(targetUser);
         List<Group> groups = new ArrayList<>();
         for (GroupMember membership : memberships) {
-            groups.add(membership.getGroup());
-        }
+            groups.add(membership.getGroup()); }
         return groups;
     }
     

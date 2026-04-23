@@ -15,6 +15,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpEntity;
 
+import ch.uzh.ifi.hase.soprafs26.rest.dto.CalendarEventGetDTO;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Optional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -146,5 +151,71 @@ public void syncCalendar(Long userId) {
         token.setAccessToken((String) body.get("access_token"));
         token.setExpiresAt(LocalDateTime.now().plusSeconds((Integer) body.get("expires_in")));
         tokenRepository.save(token);
+    }
+
+    public List<CalendarEventGetDTO> getUnifiedCalendar(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    
+        List<CalendarEventGetDTO> events = new ArrayList<>();
+    
+        List<Unavailability> dbEntries = unavailabilityRepository.findByUserId(userId);
+        for (Unavailability u : dbEntries) {
+            CalendarEventGetDTO dto = new CalendarEventGetDTO();
+            dto.setId(u.getId());
+            dto.setStartDateTime(u.getStartDateTime());
+            dto.setEndDateTime(u.getEndDateTime());
+            dto.setSource("manual");
+            events.add(dto);
+        }
+    
+        Optional<GoogleCalendarToken> tokenOpt = tokenRepository.findByUser(user);
+        if (tokenOpt.isPresent()) {
+            GoogleCalendarToken token = tokenOpt.get();
+    
+            if (LocalDateTime.now().isAfter(token.getExpiresAt())) {
+                refreshAccessToken(token);
+            }
+    
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(token.getAccessToken());
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+    
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    "https://www.googleapis.com/calendar/v3/calendars/primary/events" +
+                    "?singleEvents=true&orderBy=startTime" +
+                    "&timeMin=2020-01-01T00:00:00Z" +
+                    "&timeMax=2030-01-01T00:00:00Z",
+                    HttpMethod.GET, entity, Map.class);
+    
+            if (response.getBody() != null && response.getBody().get("items") != null) {
+                List<Map> googleEvents = (List<Map>) response.getBody().get("items");
+                for (Map event : googleEvents) {
+                    Map start = (Map) event.get("start");
+                    Map end = (Map) event.get("end");
+                    if (start == null || end == null) continue;
+    
+                    String startStr = (String) start.getOrDefault("dateTime", start.get("date"));
+                    String endStr = (String) end.getOrDefault("dateTime", end.get("date"));
+                    if (startStr == null || endStr == null) continue;
+    
+                    LocalDateTime startDT = startStr.length() == 10
+                            ? LocalDate.parse(startStr).atStartOfDay()
+                            : LocalDateTime.parse(startStr.substring(0, 19));
+                    LocalDateTime endDT = endStr.length() == 10
+                            ? LocalDate.parse(endStr).atStartOfDay()
+                            : LocalDateTime.parse(endStr.substring(0, 19));
+    
+                    CalendarEventGetDTO dto = new CalendarEventGetDTO();
+                    dto.setStartDateTime(startDT);
+                    dto.setEndDateTime(endDT);
+                    dto.setSource("google");
+                    events.add(dto);
+                }
+            }
+        }
+    
+        events.sort(Comparator.comparing(CalendarEventGetDTO::getStartDateTime));
+        return events;
     }
 }

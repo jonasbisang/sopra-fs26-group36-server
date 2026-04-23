@@ -4,6 +4,8 @@ import ch.uzh.ifi.hase.soprafs26.service.GoogleCalendarService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.CalendarEventGetDTO;
+import java.util.List;
 
 @RestController
 public class GoogleCalendarController {
@@ -21,7 +23,7 @@ public class GoogleCalendarController {
 
     @GetMapping("/auth/google/callback")
     public ResponseEntity<Void> handleCallback(@RequestParam String code,
-                                            @RequestParam String state) { // ✅ state instead of userId
+                                            @RequestParam String state) {
         Long userId = Long.parseLong(state);
         googleCalendarService.handleCallback(code, userId);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -33,4 +35,11 @@ public class GoogleCalendarController {
         googleCalendarService.syncCalendar(userId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+    @GetMapping("/users/{userId}/calendar")
+    public ResponseEntity<List<CalendarEventGetDTO>> getUnifiedCalendar(
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(googleCalendarService.getUnifiedCalendar(userId));
+}
 }

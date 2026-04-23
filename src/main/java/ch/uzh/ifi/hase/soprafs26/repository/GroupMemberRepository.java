@@ -9,5 +9,7 @@ import java.util.List;
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> {
     GroupMember findByGroupAndUser(Group group, User user);
     List<GroupMember> findByGroupAndRole(Group group, RoleType role);
+    List<GroupMember> findByUserId(Long userId);
+    List<GroupMember> findByGroup(Group group);
     List<GroupMember> findByUser(User user);
 }

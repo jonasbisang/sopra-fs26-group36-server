@@ -8,10 +8,16 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
-import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UnavailabilityPostDTO;
 
+
+
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
+import ch.uzh.ifi.hase.soprafs26.entity.Activity;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityGetDTO;
 /**
  * DTOMapper
  * This class is responsible for generating classes that will automatically
@@ -66,9 +72,35 @@ public interface DTOMapper {
 	@Mapping(target = "members", ignore = true)
 	Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
 
+	@Mapping(source = "groupId", target = "id")
 	@Mapping(source = "name", target = "name")
-	@Mapping(source = "groupId", target = "groupId")
+	@Mapping(target = "members", ignore = true)
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
+	
+	@Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "minSize", target = "minSize")
+    @Mapping(source = "maxSize", target = "maxSize")
+    @Mapping(source = "duration", target = "duration")
+    @Mapping(source = "timePreference", target = "timePreference")
+    @Mapping(source = "startTime", target = "startTime")
+    @Mapping(source = "endTime", target = "endTime")
+    @Mapping(source = "isWeatherDependent", target = "weatherDependent")
+	@Mapping(source = "minTemp", target = "minTemp")
+    @Mapping(source = "maxTemp", target = "maxTemp")
+    @Mapping(source = "rainPreference", target = "rainPreference")
+    @Mapping(source = "location", target = "location")
+    @Mapping(source = "isRecursive", target = "recursive")
+    @Mapping(target = "status", ignore = true) 
+    @Mapping(target = "group", ignore = true)  
+    Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
+
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdBy.id", target = "creatorId")
+    @Mapping(source = "group.groupId", target = "groupId")
+    @Mapping(source = "weatherDependent", target = "isWeatherDependent")
+    @Mapping(source = "recursive", target = "isRecursive")
+    ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }
-
-

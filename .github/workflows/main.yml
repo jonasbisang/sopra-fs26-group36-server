@@ -43,6 +43,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Inject secrets into app.yaml
+        run: |
+          sed -i "s|PROJECT_CLIENT_ID|${{ secrets.GOOGLE_CLIENT_ID }}|g" app.yaml
+          sed -i "s|PROJECT_CLIENT_SECRET|${{ secrets.GOOGLE_CLIENT_SECRET }}|g" app.yaml        
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v0.2.0

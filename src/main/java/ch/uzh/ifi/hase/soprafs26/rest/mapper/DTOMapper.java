@@ -95,6 +95,7 @@ public interface DTOMapper {
     @Mapping(source = "isRecursive", target = "recursive")
     @Mapping(target = "status", ignore = true) 
     @Mapping(target = "group", ignore = true)  
+	@Mapping(target = "scheduledTime", ignore = true)
     Activity convertActivityPostDTOtoEntity(ActivityPostDTO activityPostDTO);
 
 
@@ -103,5 +104,6 @@ public interface DTOMapper {
     @Mapping(source = "group.groupId", target = "groupId")
     @Mapping(source = "weatherDependent", target = "isWeatherDependent")
     @Mapping(source = "recursive", target = "isRecursive")
+	@Mapping(source = "scheduledTime", target = "scheduledTime")
 	ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }

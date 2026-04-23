@@ -8,7 +8,6 @@ import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -198,11 +197,27 @@ public class GroupService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
         }
         User targetUser = userRepository.findById(userId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "The searched user not found."));
+        if (!user.getId().equals(targetUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to get groups of other users");
+        }
         List<GroupMember> memberships = groupMemberRepository.findByUser(targetUser);
         List<Group> groups = new ArrayList<>();
         for (GroupMember membership : memberships) {
             groups.add(membership.getGroup());
         }
         return groups;
+    }
+    
+    private GroupMember verifyMembership(Group group, User user) {
+        GroupMember member = groupMemberRepository.findByGroupAndUser(group, user); 
+        if (member == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User isn't a member of this group");
+        }
+        return member; 
+    }
+    private void verifyAdmin (GroupMember member) {
+        if (member.getRole() != RoleType.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can do this");
+        }
     }
 }

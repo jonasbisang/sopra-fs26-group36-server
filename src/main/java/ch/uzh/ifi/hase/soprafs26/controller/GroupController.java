@@ -7,6 +7,10 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.JoinGroupDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.GroupService;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -81,5 +85,15 @@ public class GroupController {
     return members.stream()
             .map(DTOMapper.INSTANCE::convertEntityToUserGetDTO)
             .collect(Collectors.toList());
+    @GetMapping("/users/{userId}/groups")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<GroupGetDTO> getGroupsByUser(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        List<Group> groups = groupService.getGroupsByUser(userId, token);
+        List<GroupGetDTO> groupGetDTOs = new ArrayList<>();
+        for (Group group : groups) {
+            groupGetDTOs.add(DTOMapper.INSTANCE.convertEntityToGroupGetDTO(group));
+        }
+        return groupGetDTOs;
     }
 }

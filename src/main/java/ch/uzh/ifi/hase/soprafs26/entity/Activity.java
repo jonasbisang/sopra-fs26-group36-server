@@ -7,7 +7,9 @@ import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+
 
 @Entity
 @Table(name = "activities")
@@ -62,6 +64,9 @@ public class Activity implements Serializable {
 
     @Column
 	private ActivityStatus status;
+
+    @Column
+    private LocalDateTime scheduledTime;
 
     @ManyToOne
     @JoinColumn(name = "creator_id")
@@ -204,4 +209,11 @@ public class Activity implements Serializable {
 
     public void setGroup(Group group) {
          this.group = group; }
+
+    public LocalDateTime getScheduledTime() {
+         return scheduledTime; }
+
+
+    public void setScheduledTime(LocalDateTime scheduledTime) {
+         this.scheduledTime = scheduledTime; }
 }

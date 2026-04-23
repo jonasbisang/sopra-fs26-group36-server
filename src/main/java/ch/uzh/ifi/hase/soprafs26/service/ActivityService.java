@@ -4,9 +4,11 @@ import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
+import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
@@ -17,7 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,16 +34,23 @@ public class ActivityService {
     private final UserRepository userRepository;
     private final ActivityVoteRepository activityVoteRepository;
     private final GroupRepository groupRepository;
+    private final UnavailabilityRepository unavailabilityRepository;
+
 
     @Autowired
     public ActivityService(@Qualifier("activityRepository") ActivityRepository activityRepository,
                        @Qualifier("userRepository") UserRepository userRepository,
                        ActivityVoteRepository activityVoteRepository,
-                       GroupRepository groupRepository) {
+                       GroupRepository groupRepository, 
+                       UnavailabilityRepository unavailabilityRepository) {
+
+
     this.activityRepository = activityRepository;
     this.userRepository = userRepository;
     this.activityVoteRepository = activityVoteRepository;
     this.groupRepository = groupRepository;
+    this.unavailabilityRepository = unavailabilityRepository;
+
 }
 
 
@@ -94,18 +108,6 @@ public class ActivityService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-    ActivityVote vote = new ActivityVote();
-    vote.setActivity(activity);
-    vote.setUser(user);
-    vote.setWantsToJoin(wantsToJoin);
-    activityVoteRepository.save(vote);
-    if (wantsToJoin) {
-        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
-    if (acceptCount >= activity.getMinSize()) {
-        findSchedule(activity);
-            }
-        }
-    }
 
     private void parseTimeConditions(Activity activity) {
         TimeWindow preference = activity.getTimePreference();
@@ -142,9 +144,82 @@ public class ActivityService {
 
 
 
-    private void findSchedule(Activity activity) { // ACHTUNG GUYS JETZT TUEDS IMMER DIREKT SCHEDULE WILL D FUNCTION TO FEHLT, CHEGGED IHR
-    
+    ActivityVote vote = new ActivityVote();
+    vote.setActivity(activity);
+    vote.setUser(user);
+    vote.setWantsToJoin(wantsToJoin);
+    activityVoteRepository.save(vote);
+    if (wantsToJoin) {
+        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+    if (acceptCount >= activity.getMinSize()) {
+        findSchedule(activity);
+            }
+        }
+    }
+
+
+    private void findSchedule(Activity activity) {
+    // Fetching all user who want to participate
+    List<User> participants = activityVoteRepository.findByActivityId(activity.getId())
+        .stream()
+        .filter(ActivityVote::isWantsToJoin)
+        .map(ActivityVote::getUser)
+        .collect(Collectors.toList());
+
+    // get their unavailabilities (Only manual calendar for now, we will add google calendar next sprint!!)
+    List<Unavailability> unavailabilities = participants.stream()
+        .flatMap(u -> unavailabilityRepository.findByUserId(u.getId()).stream())
+        .collect(Collectors.toList());
+
+    LocalTime windowStart = activity.getStartTime() != null ? activity.getStartTime() : LocalTime.of(8, 0);
+    LocalTime windowEnd = activity.getEndTime() != null ? activity.getEndTime() : LocalTime.of(22, 0);
+    int duration = activity.getDuration() > 0 ? activity.getDuration() : 1;
+
+    // Trying to find a slot in the next 14 days, otherwise it should be pushed to Vote again!!! --> Does this work already? Please check martha
+    for (int day = 0; day < 14; day++) {
+        LocalDate date = LocalDate.now().plusDays(day);
+        LocalDateTime candidate = LocalDateTime.of(date, windowStart);
+        LocalDateTime latestStart = LocalDateTime.of(date, windowEnd).minusHours(duration);
+
+        while (!candidate.isAfter(latestStart)) {
+            final LocalDateTime start = candidate;
+            final LocalDateTime end = candidate.plusHours(duration);
+
+            // check if anyone is unavailable at this time
+            boolean conflict = unavailabilities.stream().anyMatch(u ->
+                start.isBefore(u.getEndDateTime()) && end.isAfter(u.getStartDateTime())
+            );
+
+        
+
+            if (!conflict) {
+
+                //Martha : Ich glaube hier sollte die weather api gerufen werden.
+
+                activity.setScheduledTime(start);
+                activity.setStatus(ActivityStatus.SCHEDULED);
+                activityRepository.save(activity);
+
+
+                for (User p : participants) {
+                    Unavailability block = new Unavailability();
+                    block.setUser(p);
+                    block.setStartDateTime(start);
+                    block.setEndDateTime(end);
+                    unavailabilityRepository.save(block);
+                }
+                return;
+            }
+            candidate = candidate.plusHours(0.5);
+        }
+    }
+
+    activity.setScheduledTime(LocalDateTime.of(LocalDate.now().plusDays(1), windowStart));
     activity.setStatus(ActivityStatus.SCHEDULED);
     activityRepository.save(activity);
 }
+
+
+
+
 }

@@ -62,4 +62,20 @@ public void vote(@PathVariable Long groupId,
     activityService.vote(groupId, activityId, dto.isWantsToJoin(), dto.getUserId());
 }
 
+    @GetMapping("/groups/{groupId}/calendar")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<ActivityGetDTO> getGroupCalendar(@PathVariable Long groupId,
+                                              @RequestHeader("Authorization") String token) {
+        List<Activity> activities = activityService.getGroupCalendar(groupId, token);
+        List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
+        for (Activity activity : activities) {
+            ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
+            long votes = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activity.getId());
+            dto.setAcceptVotes((int) votes);
+            activityGetDTOs.add(dto);
+        }
+        return activityGetDTOs;
+    }
+
 }

@@ -8,11 +8,13 @@ import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
 import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
+import ch.uzh.ifi.hase.soprafs26.entity.GroupMember;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,7 @@ public class ActivityService {
     private final UserRepository userRepository;
     private final ActivityVoteRepository activityVoteRepository;
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
 
 
@@ -48,6 +51,7 @@ public class ActivityService {
                        @Qualifier("userRepository") UserRepository userRepository,
                        ActivityVoteRepository activityVoteRepository,
                        GroupRepository groupRepository, 
+                       GroupMemberRepository groupMemberRepository,
                        UnavailabilityRepository unavailabilityRepository) {
 
 
@@ -55,6 +59,7 @@ public class ActivityService {
     this.userRepository = userRepository;
     this.activityVoteRepository = activityVoteRepository;
     this.groupRepository = groupRepository;
+    this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
 
 }
@@ -280,5 +285,20 @@ public class ActivityService {
             System.err.println("Weather API Error for " + activity.getLocation() + ": " + e.getMessage());
             return false;
         }
+    }
+    public List<Activity> getGroupCalendar(Long groupId, String token) {
+        User requester = userRepository.findByToken(token);
+        if (requester == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
+
+        Group group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+        GroupMember membership = groupMemberRepository.findByGroupAndUser(group, requester);
+        if (membership == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this group");
+        }
+
+        return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
     }
 }

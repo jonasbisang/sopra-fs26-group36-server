@@ -3,6 +3,8 @@ package ch.uzh.ifi.hase.soprafs26.rest.dto;
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalTime;
 
@@ -18,8 +20,10 @@ public class ActivityPostDTO {
 
     private TimeWindow timePreference;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime endTime;
 
     @JsonProperty("isWeatherDependent")
@@ -76,7 +80,7 @@ public class ActivityPostDTO {
     public void setLocation(String location) { this.location = location; }
 
     public Boolean getIsRecursive() { return isRecursive; }
-    public void setIsRecursive(Boolean recursive) { this.isRecursive = isRecursive; }
+    public void setIsRecursive(Boolean recursive) { this.isRecursive = recursive; }
 
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }

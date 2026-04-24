@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ActivityGetDTO {
 
@@ -27,6 +28,8 @@ public class ActivityGetDTO {
     private Long groupId;
     private Integer acceptVotes;
     private LocalDateTime scheduledTime;
+    private List<String> participantUsernames;
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -84,4 +87,7 @@ public class ActivityGetDTO {
 
     public LocalDateTime getScheduledTime() { return scheduledTime; }
     public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
+
+    public List<String> getParticipantUsernames() {return participantUsernames; }
+    public void setParticipantUsernames(List<String> participantUsernames) {this.participantUsernames = participantUsernames; }
 }

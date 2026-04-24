@@ -113,7 +113,8 @@ public class ActivityService {
     if (!activity.getGroup().getGroupId().equals(groupId)) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity does not belong to this group");}
 
-    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)) {
+    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)
+        && activity.getStatus() != ActivityStatus.SCHEDULED) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already voted on this activity");}
 
     User user = userRepository.findById(userId)
@@ -230,11 +231,9 @@ public class ActivityService {
             candidate = candidate.plusMinutes(30);
             }
         }
-
-        activity.setScheduledTime(LocalDateTime.of(LocalDate.now().plusDays(1), windowStart));
-        activity.setStatus(ActivityStatus.SCHEDULED);
-        activityRepository.save(activity);
-    }
+        activityVoteRepository.deleteByActivityId(activity.getId());
+        activityRepository.delete(activity);
+            }
 
     private boolean checkWeather(LocalDate date, Activity activity) {
         if (activity.getLocation() == null || activity.getLocation().trim().isEmpty()) {

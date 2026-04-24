@@ -106,5 +106,9 @@ public interface DTOMapper {
     @Mapping(source = "recursive", target = "isRecursive")
 	@Mapping(source = "scheduledTime", target = "scheduledTime")
 	@Mapping(target = "acceptVotes", ignore = true)
+	@Mapping(source = "minTemp", target = "minTemp")       
+	@Mapping(source = "maxTemp", target = "maxTemp")      
+	@Mapping(source = "rainPreference", target = "rainPreference") 
+	@Mapping(target = "participantUsernames", ignore = true)
 	ActivityGetDTO convertEntityToActivityGetDTO(Activity activity);
 }

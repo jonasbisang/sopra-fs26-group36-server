@@ -44,7 +44,7 @@ public class Activity implements Serializable {
     private LocalTime endTime;
 
     @Column
-	private boolean isWeatherDependent;
+	private boolean weatherDependent;
 
     @Column
 	private int maxTemp;
@@ -141,11 +141,11 @@ public class Activity implements Serializable {
     }
 
     public boolean isWeatherDependent() {
-        return isWeatherDependent;
+        return weatherDependent;
     }
 
     public void setWeatherDependent(boolean weatherDependent) {
-        this.isWeatherDependent = weatherDependent;
+        this.weatherDependent = weatherDependent;
     }
 
     public int getMaxTemp() {

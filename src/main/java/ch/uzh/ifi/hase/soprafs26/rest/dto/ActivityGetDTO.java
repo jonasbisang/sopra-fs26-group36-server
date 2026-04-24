@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public class ActivityGetDTO {
 
@@ -15,7 +16,7 @@ public class ActivityGetDTO {
     private TimeWindow timePreference;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Boolean isWeatherDependent;
+    private Boolean weatherDependent;
     private Integer minTemp;
     private Integer maxTemp;
     private RainPreference rainPreference;
@@ -25,6 +26,7 @@ public class ActivityGetDTO {
     private Long creatorId;
     private Long groupId;
     private Integer acceptVotes;
+    private LocalDateTime scheduledTime;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -50,8 +52,8 @@ public class ActivityGetDTO {
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
 
-    public Boolean getIsWeatherDependent() { return isWeatherDependent; }
-    public void setIsWeatherDependent(Boolean isWeatherDependent) { this.isWeatherDependent = isWeatherDependent; }
+    public Boolean gisWeatherDependent() { return weatherDependent; }
+    public void setWeatherDependent(Boolean weatherDependent) { this.weatherDependent = weatherDependent; }
 
     public Integer getMinTemp() { return minTemp; }
     public void setMinTemp(Integer minTemp) { this.minTemp = minTemp; }
@@ -79,4 +81,7 @@ public class ActivityGetDTO {
 
     public Integer getAcceptVotes() { return acceptVotes; }
     public void setAcceptVotes(Integer acceptVotes) { this.acceptVotes = acceptVotes; }
+
+    public LocalDateTime getScheduledTime() { return scheduledTime; }
+    public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
 }

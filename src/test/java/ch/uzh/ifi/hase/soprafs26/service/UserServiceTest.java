@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
@@ -128,6 +129,59 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(99L)).thenReturn(java.util.Optional.empty());
 
 		assertThrows(ResponseStatusException.class, () -> userService.addUnavailability(99L, unavailability));
+	}
+
+	@Test
+	public void createUser_passwordIsHashed() {
+    	User newUser = new User();
+    	newUser.setUsername("testuser");
+    	newUser.setPassword("mypassword");
+    	newUser.setEmail("test@test.com");
+
+    	Mockito.when(userRepository.findByUsername("testuser")).thenReturn(null);
+    	Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    	User created = userService.createUser(newUser);
+
+    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    	assertNotEquals("mypassword", created.getPassword());
+    	assertTrue(encoder.matches("mypassword", created.getPassword()));
+	}
+
+	@Test
+	public void loginUser_validCredentials_returnsToken() {
+    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    	User existing = new User();
+    	existing.setUsername("testuser");
+    	existing.setPassword(encoder.encode("mypassword"));
+    	existing.setStatus(UserStatus.OFFLINE);
+
+    	Mockito.when(userRepository.findByUsername("testuser")).thenReturn(existing);
+    	Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    	User input = new User();
+    	input.setUsername("testuser");
+    	input.setPassword("mypassword");
+
+    	User loggedIn = userService.loginUser(input);
+
+    	assertNotNull(loggedIn.getToken());
+    	assertEquals(UserStatus.ONLINE, loggedIn.getStatus());
+	}
+
+	@Test
+	public void logoutUser_clearsToken() {
+    	User user = new User();
+    	user.setToken("valid-token");
+    	user.setStatus(UserStatus.ONLINE);
+
+    	Mockito.when(userRepository.findByToken("valid-token")).thenReturn(user);
+    	Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    	userService.logoutUser("valid-token");
+
+    	assertNull(user.getToken());
+    	assertEquals(UserStatus.OFFLINE, user.getStatus());
 	}
 
 }

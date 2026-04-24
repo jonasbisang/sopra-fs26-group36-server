@@ -78,7 +78,36 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$[0].status", is(user.getStatus().toString())));
 	}
 
+
+	@Test
+	public void createUser_duplicateUsername_throwsError() throws Exception {
+
+		UserPostDTO userPostDTO = new UserPostDTO();
+		userPostDTO.setName("Test User");
+		userPostDTO.setUsername("testUsername");
+
+		given(userService.createUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken!"));
+
+		MockHttpServletRequestBuilder postRequest = post("/users")
+		.contentType(MediaType.APPLICATION_JSON)
+		.content(asJsonString(userPostDTO));
+
+		mockMvc.perform(postRequest).andDo(print()).andExpect(status().isConflict());
+	}
 	
+	@Test
+	public void givenUsers_returnUserId_notFound() throws Exception {
+
+
+		given(userService.getUserById(1L)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User with this id could not be found!"));
+
+		MockHttpServletRequestBuilder postRequest = get("/users/1")
+		.contentType(MediaType.APPLICATION_JSON);
+
+
+		mockMvc.perform(postRequest).andDo(print()).andExpect(status().isNotFound());
+
+	}
 
 	@Test
 	public void createUser_validInput_userCreated() throws Exception {
@@ -127,7 +156,32 @@ public class UserControllerTest {
 		}
 	}
 
+	@Test
+	public void givenUsers_returnUserId() throws Exception {
+		User user = new User();
+		user.setId(1L);
+		user.setName("Test User");
+		user.setUsername("testUsername");
+		user.setPassword("Password123.");
+		user.setToken("1");
+		user.setStatus(UserStatus.ONLINE);
 
+		
+		given(userService.getUserById(1L)).willReturn(user);
+
+
+		MockHttpServletRequestBuilder postRequest = get("/users/1")
+		.contentType(MediaType.APPLICATION_JSON);
+
+
+		mockMvc.perform(postRequest)
+		.andDo(print())
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.id", is(user.getId().intValue())))
+		.andExpect(jsonPath("$.name", is(user.getName())))
+		.andExpect(jsonPath("$.username", is(user.getUsername())))
+		.andExpect(jsonPath("$.status", is(user.getStatus().toString())));
+}
 
 
 	@Test

@@ -8,6 +8,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
@@ -227,6 +229,63 @@ public class UserServiceTest {
     	userService.changePassword(1L, "oldPassword", "newPassword");
 
     	assertTrue(encoder.matches("newPassword", testUser.getPassword()));
+}
+
+	@Test
+	public void deleteUser_validCredentials_success() {
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		testUser.setPassword(encoder.encode("testPassword"));
+		testUser.setToken("valid-token");
+
+		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+
+		userService.deleteUser(1L, "valid-token", "testPassword");
+
+		Mockito.verify(userRepository, Mockito.times(1)).delete(testUser);
+}
+	@Test
+	public void deleteUser_wrongPassword_throwsUnauthorized() {
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		testUser.setPassword(encoder.encode("correctPassword"));
+		testUser.setToken("valid-token");
+
+		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+
+		assertThrows(ResponseStatusException.class, () -> 
+			userService.deleteUser(1L, "valid-token", "wrongPassword"));
+	}
+
+	@Test
+	public void verifyToken_invalidToken_throwsUnauthorized() {
+		testUser.setToken("actual-token");
+		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+
+		ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> 
+			userService.verifyToken("fake-token", 1L));
+		
+		assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+}
+
+	@Test
+	public void deleteAllUnavailabilities_success() {
+		Unavailability u1 = new Unavailability();
+		Unavailability u2 = new Unavailability();
+		List<Unavailability> list = List.of(u1, u2);
+
+		Mockito.when(unavailabilityRepository.findByUserId(1L)).thenReturn(list);
+
+		userService.deleteAllUnavailabilities(1L);
+
+		Mockito.verify(unavailabilityRepository, Mockito.times(1)).deleteAll(list);
+}
+
+	@Test
+	public void changeUsername_invalidToken_throwsUnauthorized() {
+		testUser.setToken("secret-token");
+		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+
+		assertThrows(ResponseStatusException.class, () -> 
+			userService.changeUsername(1L, "wrong-token", "newUsername"));
 }
 
 }

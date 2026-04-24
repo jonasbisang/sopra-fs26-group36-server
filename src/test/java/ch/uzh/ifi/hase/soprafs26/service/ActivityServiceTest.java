@@ -15,6 +15,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 
 
 
@@ -53,6 +54,9 @@ public class ActivityServiceTest {
     @Mock
     private GroupRepository groupRepository;
 
+    @Mock
+    private GroupMemberRepository groupMemberRepository;
+
     @InjectMocks
     private ActivityService activityService;
 
@@ -87,7 +91,74 @@ public class ActivityServiceTest {
         Mockito.when(activityVoteRepository.save(Mockito.any())).thenReturn(new ActivityVote());
 	}
 
-
+    @Test
+    public void createActivity_success() {
+        Activity activityInput = new Activity();
+        activityInput.setName("Pizza Night");
+        activityInput.setMinSize(1);
+        activityInput.setMaxSize(5);
+        
+        Mockito.when(groupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        Mockito.when(activityRepository.save(Mockito.any(Activity.class))).thenAnswer(i -> i.getArguments()[0]);
+    
+        Activity created = activityService.createActivity(activityInput, 1L, 1L);
+    
+        assertNotNull(created);
+        assertEquals("Pizza Night", created.getName());
+        assertEquals(ActivityStatus.PENDING, created.getStatus());
+        assertEquals(testGroup, created.getGroup());
+    }
+    
+    @Test
+    public void testVote_wrongGroup_throwsBadRequest() {
+        Group differentGroup = new Group();
+        differentGroup.setGroupId(99L);
+        testActivity.setGroup(differentGroup);
+    
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            activityService.vote(1L, 1L, true, 1L);
+        });
+    
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Activity does not belong to this group", exception.getReason());
+    }
+    
+    @Test
+    public void testGetProposedActivities_success() {
+        Mockito.when(groupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+        Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
+               .thenReturn(java.util.List.of(testActivity));
+    
+        var result = activityService.getProposedActivitiesByGroupId(1L);
+    
+        assertEquals(1, result.size());
+        assertEquals(ActivityStatus.PENDING, result.get(0).getStatus());
+    }
+    
+    @Test
+    public void testGetGroupCalendar_notMember_throwsForbidden() {
+        Mockito.when(userRepository.findByToken("valid-token")).thenReturn(testUser);
+        Mockito.when(groupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+        Mockito.when(groupMemberRepository.findByGroupAndUser(Mockito.any(), Mockito.any())).thenReturn(null);
+    
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            activityService.getGroupCalendar(1L, "valid-token");
+        });
+    
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+    
+    @Test
+    public void testVote_activityNotFound_throwsNotFound() {
+        Mockito.when(activityRepository.findById(1L)).thenReturn(Optional.empty());
+    
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            activityService.vote(1L, 1L, true, 1L);
+        });
+    
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
 
 @Test
 public void testVoteSuccess() {

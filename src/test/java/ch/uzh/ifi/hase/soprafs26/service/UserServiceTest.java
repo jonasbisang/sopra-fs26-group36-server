@@ -184,4 +184,49 @@ public class UserServiceTest {
     	assertEquals(UserStatus.OFFLINE, user.getStatus());
 	}
 
+	@Test
+	public void changeUsername_success() {
+    	Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+    	Mockito.when(userRepository.findByUsername("newUsername")).thenReturn(null);
+
+    	userService.changeUsername(1L, "testToken", "newUsername");
+		System.out.println("changeUsername_success - new username: " + testUser.getUsername());
+    	assertEquals("newUsername", testUser.getUsername());
+	}
+
+	@Test
+	public void changeUsernameDuplicateError() {
+    	User otherUser = new User();
+    	otherUser.setUsername("newUsername");
+
+    	Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+    	Mockito.when(userRepository.findByUsername("newUsername")).thenReturn(otherUser);
+
+    	assertThrows(ResponseStatusException.class, () ->
+        userService.changeUsername(1L, "testToken", "newUsername"));	
+	}	
+
+	@Test
+	public void changePassword_wrongOldPassword_error() {
+    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    	testUser.setPassword(encoder.encode("correctPassword"));
+
+    	Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+		assertThrows(ResponseStatusException.class, () ->
+        userService.changePassword(1L, "wrongPassword", "newPassword"));
+	}
+
+
+	@Test
+	public void changePassword_success() {
+    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    	testUser.setPassword(encoder.encode("oldPassword"));
+
+    	Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+
+    	userService.changePassword(1L, "oldPassword", "newPassword");
+
+    	assertTrue(encoder.matches("newPassword", testUser.getPassword()));
+}
+
 }

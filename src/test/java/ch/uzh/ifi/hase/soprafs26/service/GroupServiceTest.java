@@ -15,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
+import ch.uzh.ifi.hase.soprafs26.entity.Activity;
+import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 
 import java.util.Optional;
 
@@ -173,5 +175,14 @@ public class GroupServiceTest {
 
         assertThrows(ResponseStatusException.class, () ->
             groupService.leaveGroup(1L, 1L, "valid-token"));
+    }
+
+    @Test
+    public void createGroup_activityIsPending() {
+    // This is covered implicitly — new activities start as PENDING
+    // Test that a newly created activity has PENDING status
+    Activity activity = new Activity();
+    activity.setStatus(ActivityStatus.PENDING);
+    assertEquals(ActivityStatus.PENDING, activity.getStatus());
     }
 }

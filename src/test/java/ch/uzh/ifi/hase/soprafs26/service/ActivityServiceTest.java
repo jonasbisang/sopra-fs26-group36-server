@@ -99,6 +99,11 @@ public void testVoteSuccess() {
     assertEquals(ActivityStatus.PENDING, testActivity.getStatus());
 }
 
+@Test
+public void testVoteRecordSaved() {
+    activityService.vote(1L, 1L, true, 1L);
+    Mockito.verify(activityVoteRepository, Mockito.times(1)).save(Mockito.any(ActivityVote.class));
+}
 
 @Test
 public void testMinimumNotReached() {
@@ -146,6 +151,7 @@ public void testActivityNotFound() {
 System.out.println("testActivityNotFound - Result status:" + fail.getStatusCode());
 assertEquals(404, fail.getStatusCode().value()); 
 }
+
 
 
 }

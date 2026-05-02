@@ -120,11 +120,12 @@ public class ActivityService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-
-
-
-
-
+    long delayMs = 100 + (long)(Math.random() * 1400);
+    try {
+        Thread.sleep(delayMs);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
 
     ActivityVote vote = new ActivityVote();
     vote.setActivity(activity);

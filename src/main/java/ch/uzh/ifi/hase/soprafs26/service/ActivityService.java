@@ -127,6 +127,13 @@ public class ActivityService {
         Thread.currentThread().interrupt();
     }
 
+    if (activity.getStatus() == ActivityStatus.SCHEDULED) {
+        long currentParticipants = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+        if (currentParticipants >= activity.getMaxSize()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No slots available for this activity");
+        }
+    }
+
     ActivityVote vote = new ActivityVote();
     vote.setActivity(activity);
     vote.setUser(user);

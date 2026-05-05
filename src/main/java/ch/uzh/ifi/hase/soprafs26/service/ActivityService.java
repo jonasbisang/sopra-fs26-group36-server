@@ -1,17 +1,20 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
 import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
+import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
 import ch.uzh.ifi.hase.soprafs26.entity.Unavailability;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
+import ch.uzh.ifi.hase.soprafs26.entity.GroupMember;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UnavailabilityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.web.client.RestTemplate;
+import java.util.Map;
+import java.util.Objects;
+import java.util.List;
+
 @Service
 @Transactional
 public class ActivityService {
@@ -34,6 +42,7 @@ public class ActivityService {
     private final UserRepository userRepository;
     private final ActivityVoteRepository activityVoteRepository;
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
 
 
@@ -42,6 +51,7 @@ public class ActivityService {
                        @Qualifier("userRepository") UserRepository userRepository,
                        ActivityVoteRepository activityVoteRepository,
                        GroupRepository groupRepository, 
+                       GroupMemberRepository groupMemberRepository,
                        UnavailabilityRepository unavailabilityRepository) {
 
 
@@ -49,6 +59,7 @@ public class ActivityService {
     this.userRepository = userRepository;
     this.activityVoteRepository = activityVoteRepository;
     this.groupRepository = groupRepository;
+    this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
 
 }
@@ -102,12 +113,39 @@ public class ActivityService {
     if (!activity.getGroup().getGroupId().equals(groupId)) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity does not belong to this group");}
 
-    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)) {
+    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)
+        && activity.getStatus() != ActivityStatus.SCHEDULED) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already voted on this activity");}
 
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+    long delayMs = 100 + (long)(Math.random() * 1400);
+    try {
+        Thread.sleep(delayMs);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+
+    if (activity.getStatus() == ActivityStatus.SCHEDULED) {
+        long currentParticipants = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+        if (currentParticipants >= activity.getMaxSize()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No slots available for this activity");
+        }
+    }
+
+    ActivityVote vote = new ActivityVote();
+    vote.setActivity(activity);
+    vote.setUser(user);
+    vote.setWantsToJoin(wantsToJoin);
+    activityVoteRepository.save(vote);
+    if (wantsToJoin) {
+        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+    if (acceptCount >= activity.getMinSize()) {
+        findSchedule(activity);
+            }
+        }
+    }
 
     private void parseTimeConditions(Activity activity) {
         TimeWindow preference = activity.getTimePreference();
@@ -142,22 +180,6 @@ public class ActivityService {
         return activities;
     }
 
-
-
-    ActivityVote vote = new ActivityVote();
-    vote.setActivity(activity);
-    vote.setUser(user);
-    vote.setWantsToJoin(wantsToJoin);
-    activityVoteRepository.save(vote);
-    if (wantsToJoin) {
-        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
-    if (acceptCount >= activity.getMinSize()) {
-        findSchedule(activity);
-            }
-        }
-    }
-
-
     private void findSchedule(Activity activity) {
     // Fetching all user who want to participate
     List<User> participants = activityVoteRepository.findByActivityId(activity.getId())
@@ -178,6 +200,12 @@ public class ActivityService {
     // Trying to find a slot in the next 14 days, otherwise it should be pushed to Vote again!!! --> Does this work already? Please check martha
     for (int day = 0; day < 14; day++) {
         LocalDate date = LocalDate.now().plusDays(day);
+        if (activity.isWeatherDependent()) {
+            boolean weatherCheck = checkWeather(date, activity);
+            if (!weatherCheck) {
+                continue;
+            }
+        }
         LocalDateTime candidate = LocalDateTime.of(date, windowStart);
         LocalDateTime latestStart = LocalDateTime.of(date, windowEnd).minusHours(duration);
 
@@ -194,8 +222,6 @@ public class ActivityService {
 
             if (!conflict) {
 
-                //Martha : Ich glaube hier sollte die weather api gerufen werden.
-
                 activity.setScheduledTime(start);
                 activity.setStatus(ActivityStatus.SCHEDULED);
                 activityRepository.save(activity);
@@ -210,16 +236,76 @@ public class ActivityService {
                 }
                 return;
             }
-            candidate = candidate.plusHours(0.5);
+            candidate = candidate.plusMinutes(30);
+            }
+        }
+        activityVoteRepository.deleteByActivityId(activity.getId());
+        activityRepository.delete(activity);
+            }
+
+    private boolean checkWeather(LocalDate date, Activity activity) {
+        if (activity.getLocation() == null || activity.getLocation().trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + activity.getLocation() + "&count=1&format=json";
+            Map geoResponse = restTemplate.getForObject(geoUrl, Map.class);
+
+            if (geoResponse == null || !geoResponse.containsKey("results")) {
+                System.err.println("Location not found by Geocoder: " + activity.getLocation());
+                return false;
+            }
+            List<Map<String, Object>> results = (List<Map<String, Object>>) geoResponse.get("results");
+            double lat = ((Number) results.get(0).get("latitude")).doubleValue();
+            double lon = ((Number) results.get(0).get("longitude")).doubleValue();
+
+            String weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + 
+                                "&longitude=" + lon + 
+                                "&start_date=" + date.toString() + 
+                                "&end_date=" + date.toString() + 
+                                "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto";
+
+            Map weatherResponse = restTemplate.getForObject(weatherUrl, Map.class);
+
+            Map<String, List<Number>> daily = (Map<String, List<Number>>) weatherResponse.get("daily");
+
+            double forecastMaxTemp = daily.get("temperature_2m_max").get(0).doubleValue();
+            double forecastMinTemp = daily.get("temperature_2m_min").get(0).doubleValue();
+            double precipitation = daily.get("precipitation_sum").get(0).doubleValue();
+            boolean isRaining = precipitation > 0.0;
+            if (forecastMaxTemp > activity.getMaxTemp() || forecastMinTemp < activity.getMinTemp()){
+                return false;
+            }
+            RainPreference rainPref = activity.getRainPreference();
+            if (rainPref != null && rainPref != RainPreference.Any) {
+                if (rainPref == RainPreference.NoRain && isRaining) {
+                    return false; 
+                }
+                if (rainPref == RainPreference.Rain && !isRaining) {
+                    return false; 
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            System.err.println("Weather API Error for " + activity.getLocation() + ": " + e.getMessage());
+            return false;
         }
     }
+    public List<Activity> getGroupCalendar(Long groupId, String token) {
+        User requester = userRepository.findByToken(token);
+        if (requester == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
 
-    activity.setScheduledTime(LocalDateTime.of(LocalDate.now().plusDays(1), windowStart));
-    activity.setStatus(ActivityStatus.SCHEDULED);
-    activityRepository.save(activity);
-}
+        Group group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+        GroupMember membership = groupMemberRepository.findByGroupAndUser(group, requester);
+        if (membership == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this group");
+        }
 
-
-
-
+        return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
+    }
 }

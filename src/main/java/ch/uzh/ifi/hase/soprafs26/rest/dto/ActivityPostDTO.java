@@ -4,6 +4,8 @@ import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 import ch.uzh.ifi.hase.soprafs26.constant.TimeWindow;
 import ch.uzh.ifi.hase.soprafs26.constant.RainPreference;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalTime;
 
 public class ActivityPostDTO {
@@ -18,11 +20,14 @@ public class ActivityPostDTO {
 
     private TimeWindow timePreference;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime endTime;
 
-    private Boolean isWeatherDependent;
+    @JsonProperty("isWeatherDependent")
+    private Boolean weatherDependent;
 
     private Integer minTemp;
 
@@ -59,8 +64,8 @@ public class ActivityPostDTO {
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
 
-    public Boolean getIsWeatherDependent() { return isWeatherDependent; }
-    public void setIsWeatherDependent(Boolean weatherDependent) { this.isWeatherDependent = isWeatherDependent; }
+    public Boolean isWeatherDependent() { return weatherDependent; }
+    public void setWeatherDependent(Boolean weatherDependent) { this.weatherDependent = weatherDependent; }
 
     public Integer getMinTemp() { return minTemp; }
     public void setMinTemp(Integer minTemp) { this.minTemp = minTemp; }
@@ -75,7 +80,7 @@ public class ActivityPostDTO {
     public void setLocation(String location) { this.location = location; }
 
     public Boolean getIsRecursive() { return isRecursive; }
-    public void setIsRecursive(Boolean recursive) { this.isRecursive = isRecursive; }
+    public void setIsRecursive(Boolean recursive) { this.isRecursive = recursive; }
 
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }

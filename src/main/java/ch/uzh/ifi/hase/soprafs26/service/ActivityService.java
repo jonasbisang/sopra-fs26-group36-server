@@ -234,6 +234,38 @@ public class ActivityService {
                     block.setEndDateTime(end);
                     unavailabilityRepository.save(block);
                 }
+                if (activity.isRecursive()) {
+                    boolean pendingExists = activityRepository
+                        .findByGroupGroupIdAndStatus(activity.getGroup().getGroupId(), ActivityStatus.PENDING)
+                        .stream()
+                        .anyMatch(a -> a.getName().equals(activity.getName()));
+                
+                    boolean scheduledExists = activityRepository
+                        .findByGroupGroupIdAndStatus(activity.getGroup().getGroupId(), ActivityStatus.SCHEDULED)
+                        .stream()
+                        .anyMatch(a -> a.getName().equals(activity.getName()) && !a.getId().equals(activity.getId()));
+                
+                    if (!pendingExists && !scheduledExists) {
+                        Activity recurring = new Activity();
+                        recurring.setName(activity.getName());
+                        recurring.setMinSize(activity.getMinSize());
+                        recurring.setMaxSize(activity.getMaxSize());
+                        recurring.setDuration(activity.getDuration());
+                        recurring.setTimePreference(activity.getTimePreference());
+                        recurring.setStartTime(activity.getStartTime());
+                        recurring.setEndTime(activity.getEndTime());
+                        recurring.setWeatherDependent(activity.isWeatherDependent());
+                        recurring.setMinTemp(activity.getMinTemp());
+                        recurring.setMaxTemp(activity.getMaxTemp());
+                        recurring.setRainPreference(activity.getRainPreference());
+                        recurring.setLocation(activity.getLocation());
+                        recurring.setRecursive(true);
+                        recurring.setCreatedBy(activity.getCreatedBy());
+                        recurring.setGroup(activity.getGroup());
+                        recurring.setStatus(ActivityStatus.PENDING);
+                        activityRepository.save(recurring);
+                    }
+                }
                 return;
             }
             candidate = candidate.plusMinutes(30);

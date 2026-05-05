@@ -27,6 +27,8 @@ import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Optional;
+import java.util.List;
+
 
 
 import org.springframework.http.HttpStatus;
@@ -223,6 +225,75 @@ System.out.println("testActivityNotFound - Result status:" + fail.getStatusCode(
 assertEquals(404, fail.getStatusCode().value()); 
 }
 
+@Test
+public void testRecursiveActivity_createsNewPendingActivity() {
+    testActivity.setRecursive(true);
+    testActivity.setName("Recurring Hike");
+    testActivity.setMinSize(2);
+    testActivity.setDuration(1);
 
+    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
+    Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(new ArrayList<>());
+    Mockito.when(unavailabilityRepository.findByUserId(Mockito.any())).thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
+        .thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.SCHEDULED))
+        .thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    activityService.vote(1L, 1L, true, 1L);
+
+    Mockito.verify(activityRepository, Mockito.times(2)).save(Mockito.argThat(a ->
+        a.getName().equals("Recurring Hike")
+    ));
+}
+
+@Test
+public void testRecursiveActivity_doesNotDuplicate_whenScheduledExists() {
+    testActivity.setRecursive(true);
+    testActivity.setName("Recurring Hike");
+    testActivity.setId(1L);
+    testActivity.setMinSize(2);
+    testActivity.setDuration(1);
+
+    Activity otherScheduled = new Activity();
+    otherScheduled.setName("Recurring Hike");
+    otherScheduled.setStatus(ActivityStatus.SCHEDULED);
+    otherScheduled.setId(99L);
+
+    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
+    Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(new ArrayList<>());
+    Mockito.when(unavailabilityRepository.findByUserId(Mockito.any())).thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
+        .thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.SCHEDULED))
+        .thenReturn(List.of(otherScheduled));
+    Mockito.when(activityRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    activityService.vote(1L, 1L, true, 1L);
+
+    Mockito.verify(activityRepository, Mockito.never()).save(Mockito.argThat(a ->
+        a.getStatus() == ActivityStatus.PENDING
+    ));
+}
+
+@Test
+public void testNonRecursiveActivity_doesNotCreateNewActivity() {
+    testActivity.setRecursive(false);
+    testActivity.setName("One Time Event");
+    testActivity.setMinSize(2);
+    testActivity.setDuration(1);
+
+    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
+    Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(new ArrayList<>());
+    Mockito.when(unavailabilityRepository.findByUserId(Mockito.any())).thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
+        .thenReturn(new ArrayList<>());
+    Mockito.when(activityRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+
+    activityService.vote(1L, 1L, true, 1L);
+
+    Mockito.verify(activityRepository, Mockito.times(1)).save(Mockito.any());
+}
 
 }

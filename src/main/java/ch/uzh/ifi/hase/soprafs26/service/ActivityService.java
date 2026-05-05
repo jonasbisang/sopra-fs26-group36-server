@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -307,5 +307,54 @@ public class ActivityService {
         }
 
         return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
+    }
+    public Activity reviveActivity(Long groupId, Long activityId, String token) {
+
+        User requester = userRepository.findByToken(token);
+        if (requester == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+        }
+
+        Activity original = activityRepository.findById(activityId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+
+        if (!original.getGroup().getGroupId().equals(groupId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity does not belong to this group");
+        }
+
+        GroupMember membership = groupMemberRepository.findByGroupAndUser(original.getGroup(), requester);
+        if (membership == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this group");
+        }
+
+        Activity revived = new Activity();
+        revived.setName(original.getName());
+        revived.setMinSize(original.getMinSize());
+        revived.setMaxSize(original.getMaxSize());
+        revived.setDuration(original.getDuration());
+        revived.setTimePreference(original.getTimePreference());
+        revived.setStartTime(original.getStartTime());
+        revived.setEndTime(original.getEndTime());
+        revived.setWeatherDependent(original.isWeatherDependent());
+        revived.setMinTemp(original.getMinTemp());
+        revived.setMaxTemp(original.getMaxTemp());
+        revived.setRainPreference(original.getRainPreference());
+        revived.setLocation(original.getLocation());
+        revived.setRecursive(original.isRecursive());
+        revived.setGroup(original.getGroup());
+        revived.setCreatedBy(requester);
+        revived.setStatus(ActivityStatus.PENDING); 
+
+
+        Activity savedRevived = activityRepository.save(revived);
+
+
+        List<ActivityVote> oldVotes = activityVoteRepository.findByActivityId(activityId);
+        activityVoteRepository.deleteAll(oldVotes);
+
+        activityRepository.delete(original);
+        activityRepository.flush();
+
+        return savedRevived;
     }
 }

@@ -85,5 +85,16 @@ public void vote(@PathVariable Long groupId,
         }
         return activityGetDTOs;
     }
+    @PostMapping("/groups/{groupId}/activities/{activityId}/revive")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public ActivityGetDTO reviveActivity(@PathVariable Long groupId,
+                                      @PathVariable Long activityId,
+                                      @RequestHeader("Authorization") String token) {
+        Activity revived = activityService.reviveActivity(groupId, activityId, token);
+        ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(revived);
+        dto.setAcceptVotes(0); // new activity has no votes yet
+        return dto;
+    }
 
 }

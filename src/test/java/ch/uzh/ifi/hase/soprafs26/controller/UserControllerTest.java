@@ -235,4 +235,40 @@ public void changeUsername_duplicateUsername_throwsError() throws Exception {
         .andDo(print())
         .andExpect(status().isConflict());
 }
+
+
+@Test
+public void getUserById_notFound_throwsError() throws Exception {
+    
+    given(userService.getUserById(99L)) // Trying to open proffile on non existing user
+        .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    
+    
+    mockMvc.perform(get("/users/99") // should return 404
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isNotFound());
+}
+
+
+@Test
+public void getGroupsForUser_userNoGroups_canStillSeeUsers() throws Exception {
+    
+    User user = new User(); // Test user erstelle
+    user.setId(1L);
+    user.setName("Test User");
+    user.setUsername("testUsername");
+    user.setStatus(UserStatus.ONLINE);
+
+    
+    given(userService.getUsers()).willReturn(Collections.singletonList(user)); //Can still view other users which do not share group
+
+   
+    mockMvc.perform(get("/users")  // check if user can see all others
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[0].username", is(user.getUsername())));
+}
 }

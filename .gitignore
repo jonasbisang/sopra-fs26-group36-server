@@ -45,5 +45,4 @@ local.properties
 
 /bin
 
-app.yaml
 src/main/resources/application.properties

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.CalendarEventGetDTO;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 
 @RestController
 public class GoogleCalendarController {
@@ -26,7 +27,9 @@ public class GoogleCalendarController {
                                             @RequestParam String state) {
         Long userId = Long.parseLong(state);
         googleCalendarService.handleCallback(code, userId);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "https://sopra-fs26-group-36-client.vercel.app/users/" + userId + "/calendar");
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @PostMapping("/users/{userId}/calendar/sync")

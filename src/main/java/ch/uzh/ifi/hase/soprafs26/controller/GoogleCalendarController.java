@@ -28,7 +28,7 @@ public class GoogleCalendarController {
         Long userId = Long.parseLong(state);
         googleCalendarService.handleCallback(code, userId);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "https://sopra-fs26-group-36-client.vercel.app/users/" + userId + "/calendar");
+        headers.add("Location", "https://sopra-fs26-group36-client.vercel.app/users/" + userId + "/calendar");
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 

@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.scheduling.annotation.Scheduled;
 
 
 import java.time.LocalDateTime;
@@ -232,6 +233,7 @@ public class ActivityService {
                     block.setUser(p);
                     block.setStartDateTime(start);
                     block.setEndDateTime(end);
+                    block.setSource("acitivity");
                     unavailabilityRepository.save(block);
                 }
                 return;
@@ -239,8 +241,8 @@ public class ActivityService {
             candidate = candidate.plusMinutes(30);
             }
         }
-        activityVoteRepository.deleteByActivityId(activity.getId());
-        activityRepository.delete(activity);
+            activity.setStatus(ActivityStatus.FAILED);
+            activityRepository.save(activity);
             }
 
     private boolean checkWeather(LocalDate date, Activity activity) {
@@ -308,4 +310,19 @@ public class ActivityService {
 
         return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
     }
+
+    @Scheduled(fixedRate = 300000)
+    public void markPastActivities() {
+    LocalDateTime now = LocalDateTime.now();
+    List<Activity> scheduled = activityRepository.findByStatus(ActivityStatus.SCHEDULED);
+
+    for (Activity activity : scheduled) {
+        if (activity.getScheduledTime() == null) continue;
+        LocalDateTime endTime = activity.getScheduledTime().plusHours(activity.getDuration());
+        if (endTime.isBefore(now)) {
+            activity.setStatus(ActivityStatus.PAST);
+            activityRepository.save(activity);
+        }
+    }
+}
 }

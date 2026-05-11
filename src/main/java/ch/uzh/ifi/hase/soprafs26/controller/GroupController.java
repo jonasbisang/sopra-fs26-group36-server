@@ -7,7 +7,6 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.JoinGroupDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.GroupService;
-
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -93,5 +92,5 @@ public class GroupController {
     Group group = groupRepository.findById(groupId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
     return DTOMapper.INSTANCE.convertEntityToGroupGetDTO(group);
-}
+    }
 }

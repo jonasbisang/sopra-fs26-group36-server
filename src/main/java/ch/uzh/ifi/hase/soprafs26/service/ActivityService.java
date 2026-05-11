@@ -190,7 +190,7 @@ public class ActivityService {
     int duration = activity.getDuration() > 0 ? activity.getDuration() : 1;
 
     // Trying to find a slot in the next 14 days, otherwise it should be pushed to Vote again!!! --> Does this work already? Please check martha
-    for (int day = 0; day < 14; day++) {
+    for (int day = 1; day < 14; day++) {
         LocalDate date = LocalDate.now().plusDays(day);
         if (activity.isWeatherDependent()) {
             boolean weatherCheck = checkWeather(date, activity);

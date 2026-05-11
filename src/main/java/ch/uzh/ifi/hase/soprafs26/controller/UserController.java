@@ -92,6 +92,14 @@ public class UserController {
     	userService.changeUsername(id, token, userPutDTO.getNewUsername());
 }
 
+	@PutMapping("/users/{userId}/bio")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changeBio(@PathVariable Long userId,
+                      	@RequestBody UserPutDTO userPutDTO,
+                      	@RequestHeader("Authorization") String token) {
+    	userService.changeBio(userId, userPutDTO.getNewBio(), token);
+	}
+
 	@DeleteMapping("/users/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteUser(

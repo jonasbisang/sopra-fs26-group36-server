@@ -70,7 +70,4 @@ public class EmailService {
         }
     }
 }
-//xemo foew dhvt ilva
-//export MAIL_USERNAME=friendler.sopra@gmail.com 
-//export MAIL_PASSWORD=xemo foew dhvt ilva 
-//./gradlew bootRun
+

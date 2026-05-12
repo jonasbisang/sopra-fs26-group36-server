@@ -44,6 +44,7 @@ public class ActivityService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
+    private final EmailService emailService;
 
 
     @Autowired
@@ -52,7 +53,8 @@ public class ActivityService {
                        ActivityVoteRepository activityVoteRepository,
                        GroupRepository groupRepository, 
                        GroupMemberRepository groupMemberRepository,
-                       UnavailabilityRepository unavailabilityRepository) {
+                       UnavailabilityRepository unavailabilityRepository,
+                       EmailService emailService) {
 
 
     this.activityRepository = activityRepository;
@@ -61,6 +63,7 @@ public class ActivityService {
     this.groupRepository = groupRepository;
     this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
+    this.emailService = emailService;
 
 }
 
@@ -226,6 +229,7 @@ public class ActivityService {
                 activity.setStatus(ActivityStatus.SCHEDULED);
                 activityRepository.save(activity);
 
+                emailService.sendActivityScheduledEmail(activity, participants);
 
                 for (User p : participants) {
                     Unavailability block = new Unavailability();

@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class GoogleCalendarService {
 
@@ -217,5 +219,36 @@ public void syncCalendar(Long userId) {
     
         events.sort(Comparator.comparing(CalendarEventGetDTO::getStartDateTime));
         return events;
+    }
+     public void createCalendarEvent(User user, String eventName, String location, LocalDateTime start, LocalDateTime end) {
+        Optional<GoogleCalendarToken> tokenOpt = tokenRepository.findByUser(user);
+        if (tokenOpt.isEmpty()) { return; }
+        
+        GoogleCalendarToken token = tokenOpt.get();
+        if (LocalDateTime.now().isAfter(token.getExpiresAt())) {
+            refreshAccessToken(token);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token.getAccessToken());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        
+        Map<String, Object> requestBody = Map.of(
+            "summary", eventName,
+            "location", location != null ? location: "",
+            "start", Map.of("dateTime", start.format(formatter)),
+            "end", Map.of("dateTime", end.format(formatter))
+        );
+        HttpEntity<Map<String, Object>> entity = new HttpEntity <>(requestBody, headers);
+        try {
+            restTemplate.postForEntity(
+                "https://www.googleapis.com/calendar/v3/calendars/primary/events", 
+                entity, 
+                Map.class
+            );
+        } catch(Exception e) {
+            System.err.println("Failed to create Google Calendar event for user" + user.getUsername() + ": " + e.getMessage());
+        }
     }
 }

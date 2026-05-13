@@ -13,7 +13,7 @@ public class Group implements Serializable { //maybe change Group to FriendGroup
     @GeneratedValue 
     private Long groupId; //maybe change to Id?
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String name;
 
     @Column

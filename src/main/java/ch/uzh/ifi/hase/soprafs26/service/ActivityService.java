@@ -44,6 +44,7 @@ public class ActivityService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
+    private final EmailService emailService;
     private final GoogleCalendarService googleCalendarService;
 
 
@@ -53,8 +54,10 @@ public class ActivityService {
                        ActivityVoteRepository activityVoteRepository,
                        GroupRepository groupRepository, 
                        GroupMemberRepository groupMemberRepository,
+                       UnavailabilityRepository unavailabilityRepository,
+                       EmailService emailService,
                        UnavailabilityRepository unavailabilityRepository, 
-                    GoogleCalendarService googleCalendarService ) {
+                       GoogleCalendarService googleCalendarService ) {
 
 
     this.activityRepository = activityRepository;
@@ -63,6 +66,7 @@ public class ActivityService {
     this.groupRepository = groupRepository;
     this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
+    this.emailService = emailService;
     this.googleCalendarService = googleCalendarService;
 
 }
@@ -229,6 +233,7 @@ public class ActivityService {
                 activity.setStatus(ActivityStatus.SCHEDULED);
                 activityRepository.save(activity);
 
+                emailService.sendActivityScheduledEmail(activity, participants);
 
                 for (User p : participants) {
                     Unavailability block = new Unavailability();

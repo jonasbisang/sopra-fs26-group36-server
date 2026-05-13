@@ -57,6 +57,9 @@ public class ActivityServiceTest {
     @Mock
     private GroupMemberRepository groupMemberRepository;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private ActivityService activityService;
 
@@ -191,15 +194,25 @@ public void testMinimumNotReached() {
 }
 
 @Test
-public void testTriggerSearch() {
-    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
-    Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(new ArrayList<>());
-    Mockito.when(activityRepository.save(Mockito.any())).thenReturn(testActivity);
+    public void testTriggerSearch() {
+        testActivity.setMinSize(2);
+        testActivity.setWeatherDependent(false);
+        
+        Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
+        
+        ActivityVote mockVote = new ActivityVote();
+        mockVote.setUser(testUser);
+        mockVote.setWantsToJoin(true);
+        
+        java.util.List<ActivityVote> votes = java.util.List.of(mockVote);
+        Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(votes);
+        
+        activityService.vote(1L, 1L, true, 1L);
 
-    activityService.vote(1L,1L,true,1L);
-    System.out.println("testTriggerSearch - The status is" + testActivity.getStatus());
-    assertEquals(ActivityStatus.SCHEDULED, testActivity.getStatus());
-}
+        assertEquals(ActivityStatus.SCHEDULED, testActivity.getStatus());
+        Mockito.verify(emailService, Mockito.times(1))
+               .sendActivityScheduledEmail(Mockito.any(), Mockito.any());
+    }
 
 @Test
 public void testAlreadyVoted() {

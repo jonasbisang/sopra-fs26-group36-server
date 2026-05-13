@@ -45,6 +45,8 @@ public class ActivityService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
+    private final EmailService emailService;
+    private final GoogleCalendarService googleCalendarService;
 
 
     @Autowired
@@ -53,7 +55,9 @@ public class ActivityService {
                        ActivityVoteRepository activityVoteRepository,
                        GroupRepository groupRepository, 
                        GroupMemberRepository groupMemberRepository,
-                       UnavailabilityRepository unavailabilityRepository) {
+                       UnavailabilityRepository unavailabilityRepository,
+                       EmailService emailService,
+                       GoogleCalendarService googleCalendarService ) {
 
 
     this.activityRepository = activityRepository;
@@ -62,6 +66,8 @@ public class ActivityService {
     this.groupRepository = groupRepository;
     this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
+    this.emailService = emailService;
+    this.googleCalendarService = googleCalendarService;
 
 }
 
@@ -199,7 +205,7 @@ public class ActivityService {
     int duration = activity.getDuration() > 0 ? activity.getDuration() : 1;
 
     // Trying to find a slot in the next 14 days, otherwise it should be pushed to Vote again!!! --> Does this work already? Please check martha
-    for (int day = 0; day < 14; day++) {
+    for (int day = 1; day < 14; day++) {
         LocalDate date = LocalDate.now().plusDays(day);
         if (activity.isWeatherDependent()) {
             boolean weatherCheck = checkWeather(date, activity);
@@ -227,6 +233,7 @@ public class ActivityService {
                 activity.setStatus(ActivityStatus.SCHEDULED);
                 activityRepository.save(activity);
 
+                emailService.sendActivityScheduledEmail(activity, participants);
 
                 for (User p : participants) {
                     Unavailability block = new Unavailability();
@@ -235,6 +242,8 @@ public class ActivityService {
                     block.setEndDateTime(end);
                     block.setSource("acitivity");
                     unavailabilityRepository.save(block);
+
+                    googleCalendarService.createCalendarEvent(p,activity.getName(), activity.getLocation(), start, end);
                 }
                 return;
             }

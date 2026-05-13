@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,6 +154,18 @@ public class UserService {
     userRepository.save(user);
 	}
 
+	public void changeBio( Long userId, String bio, String token) {
+		User user = userRepository.findByToken(token);
+		if (user == null ) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in. "); 
+		}
+		if (!user.getId().equals(userId)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot edit someone elses profile");
+		}
+		user.setBio(bio);
+		userRepository.save(user);
+		userRepository.flush();
+	}
 	public void deleteUser(Long id, String token, String password) {
     User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 

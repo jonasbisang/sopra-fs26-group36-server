@@ -81,6 +81,12 @@ public void vote(@PathVariable Long groupId,
             ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
             long votes = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activity.getId());
             dto.setAcceptVotes((int) votes);
+            List<String> usernames = activityVoteRepository.findByActivityId(activity.getId())
+            .stream()
+            .filter(ActivityVote::isWantsToJoin)
+            .map(v -> v.getUser().getUsername())
+            .collect(Collectors.toList());
+            dto.setParticipantUsernames(usernames);
             activityGetDTOs.add(dto);
         }
         return activityGetDTOs;

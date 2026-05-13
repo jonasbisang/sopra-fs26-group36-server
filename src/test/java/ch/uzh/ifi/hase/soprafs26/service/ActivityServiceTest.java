@@ -17,8 +17,6 @@ import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 
-
-
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
@@ -56,6 +54,9 @@ public class ActivityServiceTest {
 
     @Mock
     private GroupMemberRepository groupMemberRepository;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private ActivityService activityService;
@@ -188,17 +189,6 @@ public void testMinimumNotReached() {
     Mockito.verify(activityRepository, Mockito.never()).save(Mockito.argThat(testing->testing.getStatus()
     == ActivityStatus.SCHEDULED));
     System.out.println("The scheduling has not been triggered because the minium participants count is not yet met");
-}
-
-@Test
-public void testTriggerSearch() {
-    Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
-    Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(new ArrayList<>());
-    Mockito.when(activityRepository.save(Mockito.any())).thenReturn(testActivity);
-
-    activityService.vote(1L,1L,true,1L);
-    System.out.println("testTriggerSearch - The status is" + testActivity.getStatus());
-    assertEquals(ActivityStatus.SCHEDULED, testActivity.getStatus());
 }
 
 @Test

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityVoteDTO;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
+import ch.uzh.ifi.hase.soprafs26.constant.ActivityStatus;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -43,9 +44,14 @@ public ActivityController(ActivityService activityService,
         List<Activity> activities;
         if ("SCHEDULED".equals(status)) {
             activities = activityService.getActivities(groupId);
+        } else if ("PAST".equals(status)) {
+            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.PAST);
+        } else if ("FAILED".equals(status)) {
+            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.FAILED);
         } else {
             activities = activityService.getProposedActivitiesByGroupId(groupId);
         }
+        
         List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
         for (Activity activity : activities) {
             ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
@@ -62,13 +68,13 @@ public ActivityController(ActivityService activityService,
         return activityGetDTOs;
 }
 
-@PostMapping("/groups/{groupId}/activities/{activityId}/votes")
-@ResponseStatus(HttpStatus.CREATED)
-public void vote(@PathVariable Long groupId,
+    @PostMapping("/groups/{groupId}/activities/{activityId}/votes")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void vote(@PathVariable Long groupId,
                  @PathVariable Long activityId,
                  @RequestBody ActivityVoteDTO dto) {
-    activityService.vote(groupId, activityId, dto.isWantsToJoin(), dto.getUserId());
-}
+        activityService.vote(groupId, activityId, dto.isWantsToJoin(), dto.getUserId());
+    }
 
     @GetMapping("/groups/{groupId}/calendar")
     @ResponseStatus(HttpStatus.OK)
@@ -92,4 +98,10 @@ public void vote(@PathVariable Long groupId,
         return activityGetDTOs;
     }
 
+    @PostMapping("/activities/{activityId}/revive")
+    @ResponseStatus(HttpStatus.OK)
+    public void reviveActivity(@PathVariable Long activityId,
+                               @RequestHeader("Authorization") String token) {
+        activityService.reviveActivity(activityId);
+    }
 }

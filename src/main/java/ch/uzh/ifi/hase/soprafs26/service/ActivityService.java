@@ -334,4 +334,22 @@ public class ActivityService {
         }
     }
 }
+
+
+    public void reviveActivity(Long activityId) {
+    Activity activity = activityRepository.findById(activityId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+    
+    activity.setStatus(ActivityStatus.PENDING);
+    activity.setScheduledTime(null);
+    activityRepository.save(activity);
+    
+    activityVoteRepository.deleteByActivityId(activityId);
+    }
+
+    public List<Activity> getActivitiesByStatus(Long groupId, ActivityStatus status) {
+    groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+    return activityRepository.findByGroupGroupIdAndStatus(groupId, status);
+    }
 }

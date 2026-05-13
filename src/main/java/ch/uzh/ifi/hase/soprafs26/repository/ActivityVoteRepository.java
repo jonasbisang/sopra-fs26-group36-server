@@ -13,4 +13,5 @@ public interface ActivityVoteRepository extends JpaRepository<ActivityVote, Long
     
     List<ActivityVote> findByActivityId(Long activityId);
     void deleteByActivityId(Long activityId);
+
 }

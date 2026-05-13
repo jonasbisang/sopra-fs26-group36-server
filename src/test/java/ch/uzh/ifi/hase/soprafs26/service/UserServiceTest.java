@@ -186,6 +186,15 @@ public class UserServiceTest {
     	assertEquals(UserStatus.OFFLINE, user.getStatus());
 	}
 
+	@Test
+	public void changeUsername_success() {
+    	Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+    	Mockito.when(userRepository.findByUsername("newUsername")).thenReturn(null);
+
+    	userService.changeUsername(1L, "testToken", "newUsername");
+		System.out.println("changeUsername_success - new username: " + testUser.getUsername());
+    	assertEquals("newUsername", testUser.getUsername());
+	}
 
 	@Test
 	public void changeUsernameDuplicateError() {
@@ -256,15 +265,5 @@ public class UserServiceTest {
 		
 		assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
 }
-
-	@Test
-	public void changeUsername_success() {
-    Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
-    Mockito.when(userRepository.findByUsername("newUsername")).thenReturn(null);
-    Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0)); // add this
-
-    userService.changeUsername(1L, "testToken", "newUsername");
-    assertEquals("newUsername", testUser.getUsername());
-	}
 
 }

@@ -22,6 +22,7 @@ public class Unavailability implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 
     @Column
@@ -31,10 +32,10 @@ public class Unavailability implements Serializable {
     return source;
     }
 
-public void setSource(String source) {
+    public void setSource(String source) {
     this.source = source;
 }
-    private User user;
+
 
     public LocalDateTime getStartDateTime() {
 		return startDateTime;

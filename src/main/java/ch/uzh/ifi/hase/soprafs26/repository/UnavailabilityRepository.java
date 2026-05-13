@@ -9,4 +9,5 @@ import java.util.List;
 public interface UnavailabilityRepository extends JpaRepository<Unavailability, Long> {
     List<Unavailability> findByUserId(Long userId);
     List<Unavailability> findByUserIn(List<User> users);
+    void deleteByUserIdAndSource(Long userId, String source);
 }

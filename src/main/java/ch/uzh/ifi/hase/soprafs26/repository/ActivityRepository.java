@@ -22,4 +22,5 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findByTimePreference(TimeWindow timePreference);
     
     List<Activity> findByGroupGroupIdAndStatus(Long groupId, ActivityStatus status);
+
 }

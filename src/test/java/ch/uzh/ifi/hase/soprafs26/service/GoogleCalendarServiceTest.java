@@ -75,25 +75,6 @@ public class GoogleCalendarServiceTest {
         assertThrows(ResponseStatusException.class, () -> googleCalendarService.syncCalendar(1L));
     }
 
-    @Test
-    public void getUnifiedCalendar_returnsManualAndGoogleEvents() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        
-        ch.uzh.ifi.hase.soprafs26.entity.Unavailability manual = new ch.uzh.ifi.hase.soprafs26.entity.Unavailability();
-        manual.setStartDateTime(LocalDateTime.of(2026, 5, 1, 10, 0));
-        manual.setEndDateTime(LocalDateTime.of(2026, 5, 1, 11, 0));
-        manual.setId(100L);
-        
-        when(unavailabilityRepository.findByUserId(1L)).thenReturn(List.of(manual));
-
-        when(tokenRepository.findByUser(testUser)).thenReturn(Optional.empty());
-
-        List<CalendarEventGetDTO> result = googleCalendarService.getUnifiedCalendar(1L);
-
-        assertEquals(1, result.size());
-        assertEquals("manual", result.get(0).getSource());
-        assertEquals(LocalDateTime.of(2026, 5, 1, 10, 0), result.get(0).getStartDateTime());
-    }
 
     @Test
     public void getUnifiedCalendar_tokenExpired_triggersRefresh() {

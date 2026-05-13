@@ -185,6 +185,7 @@ public class UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     unavailability.setUser(user);
+	unavailability.setSource("manual");
     return unavailabilityRepository.save(unavailability);
 	}
 
@@ -202,8 +203,7 @@ public class UserService {
 	}
 
 	public void deleteAllUnavailabilities(Long userId) {
-    	List<Unavailability> list = unavailabilityRepository.findByUserId(userId);
-    	unavailabilityRepository.deleteAll(list);
+    	unavailabilityRepository.deleteByUserIdAndSource(userId, "manual");
 }
 
 public User getUserById(Long id) {

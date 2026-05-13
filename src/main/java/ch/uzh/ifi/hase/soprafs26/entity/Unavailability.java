@@ -24,6 +24,19 @@ public class Unavailability implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+
+    @Column
+    private String source; 
+
+    public String getSource() {
+    return source;
+    }
+
+    public void setSource(String source) {
+    this.source = source;
+}
+
+
     public LocalDateTime getStartDateTime() {
 		return startDateTime;
 	}

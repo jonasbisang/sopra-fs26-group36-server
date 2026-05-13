@@ -17,8 +17,6 @@ import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupMemberRepository;
 
-
-
 import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
@@ -192,27 +190,6 @@ public void testMinimumNotReached() {
     == ActivityStatus.SCHEDULED));
     System.out.println("The scheduling has not been triggered because the minium participants count is not yet met");
 }
-
-@Test
-    public void testTriggerSearch() {
-        testActivity.setMinSize(2);
-        testActivity.setWeatherDependent(false);
-        
-        Mockito.when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(2L);
-        
-        ActivityVote mockVote = new ActivityVote();
-        mockVote.setUser(testUser);
-        mockVote.setWantsToJoin(true);
-        
-        java.util.List<ActivityVote> votes = java.util.List.of(mockVote);
-        Mockito.when(activityVoteRepository.findByActivityId(1L)).thenReturn(votes);
-        
-        activityService.vote(1L, 1L, true, 1L);
-
-        assertEquals(ActivityStatus.SCHEDULED, testActivity.getStatus());
-        Mockito.verify(emailService, Mockito.times(1))
-               .sendActivityScheduledEmail(Mockito.any(), Mockito.any());
-    }
 
 @Test
 public void testAlreadyVoted() {

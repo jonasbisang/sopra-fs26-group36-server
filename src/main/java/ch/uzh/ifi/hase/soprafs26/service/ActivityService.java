@@ -56,7 +56,6 @@ public class ActivityService {
                        GroupMemberRepository groupMemberRepository,
                        UnavailabilityRepository unavailabilityRepository,
                        EmailService emailService,
-                       UnavailabilityRepository unavailabilityRepository, 
                        GoogleCalendarService googleCalendarService ) {
 
 

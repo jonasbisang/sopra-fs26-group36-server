@@ -45,6 +45,7 @@ public class ActivityService {
     private final GroupMemberRepository groupMemberRepository;
     private final UnavailabilityRepository unavailabilityRepository;
     private final EmailService emailService;
+    private final GoogleCalendarService googleCalendarService;
 
 
     @Autowired
@@ -54,7 +55,9 @@ public class ActivityService {
                        GroupRepository groupRepository, 
                        GroupMemberRepository groupMemberRepository,
                        UnavailabilityRepository unavailabilityRepository,
-                       EmailService emailService) {
+                       EmailService emailService,
+                       UnavailabilityRepository unavailabilityRepository, 
+                       GoogleCalendarService googleCalendarService ) {
 
 
     this.activityRepository = activityRepository;
@@ -64,6 +67,7 @@ public class ActivityService {
     this.groupMemberRepository = groupMemberRepository;
     this.unavailabilityRepository = unavailabilityRepository;
     this.emailService = emailService;
+    this.googleCalendarService = googleCalendarService;
 
 }
 
@@ -237,6 +241,8 @@ public class ActivityService {
                     block.setStartDateTime(start);
                     block.setEndDateTime(end);
                     unavailabilityRepository.save(block);
+
+                    googleCalendarService.createCalendarEvent(p,activity.getName(), activity.getLocation(), start, end);
                 }
                 return;
             }

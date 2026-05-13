@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ActivityVoteRepository extends JpaRepository<ActivityVote, Long> {
@@ -13,5 +14,7 @@ public interface ActivityVoteRepository extends JpaRepository<ActivityVote, Long
     
     List<ActivityVote> findByActivityId(Long activityId);
     void deleteByActivityId(Long activityId);
+
+    Optional<ActivityVote> findByActivityIdAndUserId(Long activityId, Long userId);
 
 }

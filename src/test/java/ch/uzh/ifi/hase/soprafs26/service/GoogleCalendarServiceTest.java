@@ -57,7 +57,7 @@ public class GoogleCalendarServiceTest {
 
         assertTrue(url.contains("client_id=test-client-id"));
         assertTrue(url.contains("state=1"));
-        assertTrue(url.contains("scope=https://www.googleapis.com/auth/calendar.readonly"));
+        assertTrue(url.contains("scope=https://www.googleapis.com/auth/calendar"));
     }
 
     @Test

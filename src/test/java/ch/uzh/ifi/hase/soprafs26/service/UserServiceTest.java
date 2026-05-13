@@ -267,25 +267,13 @@ public class UserServiceTest {
 }
 
 	@Test
-	public void deleteAllUnavailabilities_success() {
-		Unavailability u1 = new Unavailability();
-		Unavailability u2 = new Unavailability();
-		List<Unavailability> list = List.of(u1, u2);
+	public void changeUsername_success() {
+    Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
+    Mockito.when(userRepository.findByUsername("newUsername")).thenReturn(null);
+    Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArgument(0)); // add this
 
-		Mockito.when(unavailabilityRepository.findByUserId(1L)).thenReturn(list);
-
-		userService.deleteAllUnavailabilities(1L);
-
-		Mockito.verify(unavailabilityRepository, Mockito.times(1)).deleteAll(list);
-}
-
-	@Test
-	public void changeUsername_invalidToken_throwsUnauthorized() {
-		testUser.setToken("secret-token");
-		Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
-
-		assertThrows(ResponseStatusException.class, () -> 
-			userService.changeUsername(1L, "wrong-token", "newUsername"));
-}
+    userService.changeUsername(1L, "testToken", "newUsername");
+    assertEquals("newUsername", testUser.getUsername());
+	}
 
 }

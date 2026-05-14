@@ -70,10 +70,19 @@ public ActivityController(ActivityService activityService,
         List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
         for (Activity activity : activities) {
             ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
+            
+            // 1. Calculate and set acceptVotes
             long votes = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activity.getId());
             dto.setAcceptVotes((int) votes);
             
-            // (Optional: add participantUsernames mapping here if needed for this route)
+            // 2. Calculate and set the participantUsernames (This fixes the test!)
+            List<String> participantUsernames = activityVoteRepository.findByActivityId(activity.getId())
+                .stream()
+                .filter(vote -> vote.isWantsToJoin()) 
+                .map(vote -> vote.getUser().getUsername()) 
+                .collect(java.util.stream.Collectors.toList());
+                
+            dto.setParticipantUsernames(participantUsernames);
             
             activityGetDTOs.add(dto);
         }

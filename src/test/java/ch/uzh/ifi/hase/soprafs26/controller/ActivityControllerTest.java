@@ -5,9 +5,11 @@ import ch.uzh.ifi.hase.soprafs26.entity.Activity;
 import ch.uzh.ifi.hase.soprafs26.entity.ActivityVote;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.ActivityVoteRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ActivityVoteDTO;
 import ch.uzh.ifi.hase.soprafs26.service.ActivityService;
+import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,9 @@ public class ActivityControllerTest {
     private ActivityVoteRepository activityVoteRepository;
 
 
+    @MockitoBean
+    private UserRepository userRepository;
+
     @Test
     public void getProposedActivities_returnsListWithVotes() throws Exception {
         Activity activity = new Activity();
@@ -52,17 +57,24 @@ public class ActivityControllerTest {
         activity.setStatus(ActivityStatus.PENDING);
 
         User participant = new User();
+        participant.setId(1L); // Added ID so the service mock works
         participant.setUsername("ciaran");
 
         ActivityVote vote = new ActivityVote();
         vote.setWantsToJoin(true);
         vote.setUser(participant);
 
-        given(activityService.getProposedActivitiesByGroupId(1L)).willReturn(Collections.singletonList(activity));
+        // FIX 2: Mock the token lookup
+        given(userRepository.findByToken("test-token")).willReturn(participant);
+
+        // FIX 3: Update the mocked method to match the new 'else' block logic
+        given(activityService.getUnvotedPendingActivities(1L, 1L)).willReturn(Collections.singletonList(activity));
+        
         given(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(10L)).willReturn(1L);
         given(activityVoteRepository.findByActivityId(10L)).willReturn(Collections.singletonList(vote));
 
-        mockMvc.perform(get("/groups/1/activities"))
+        // FIX 4: Add the required Authorization header to the GET request
+        mockMvc.perform(get("/groups/1/activities").header("Authorization", "test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].name", is("Coding")))
@@ -77,6 +89,7 @@ public class ActivityControllerTest {
         voteDTO.setWantsToJoin(true);
 
         MockHttpServletRequestBuilder postRequest = post("/groups/1/activities/10/votes")
+                .header("Authorization", "test-token") // Added header just in case it's required globally
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(voteDTO));
 
@@ -93,6 +106,11 @@ public class ActivityControllerTest {
         scheduledActivity.setId(5L);
         scheduledActivity.setName("Party");
         scheduledActivity.setStatus(ActivityStatus.SCHEDULED);
+
+        // Mock the user lookup so context doesn't crash if the calendar method uses it
+        User mockUser = new User();
+        mockUser.setId(1L);
+        given(userRepository.findByToken("token-123")).willReturn(mockUser);
 
         given(activityService.getGroupCalendar(Mockito.eq(1L), Mockito.anyString()))
                 .willReturn(Collections.singletonList(scheduledActivity));

@@ -75,7 +75,7 @@ public ActivityController(ActivityService activityService,
             long votes = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activity.getId());
             dto.setAcceptVotes((int) votes);
             
-            // 2. Calculate and set the participantUsernames (This fixes the test!)
+            // 2. Calculate and set the participantUsernames 
             List<String> participantUsernames = activityVoteRepository.findByActivityId(activity.getId())
                 .stream()
                 .filter(vote -> vote.isWantsToJoin()) 

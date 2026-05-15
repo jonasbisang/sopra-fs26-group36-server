@@ -352,4 +352,16 @@ public class ActivityService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
     return activityRepository.findByGroupGroupIdAndStatus(groupId, status);
     }
+
+    public List<Activity> getRejectedActivities(Long groupId, Long userId) {
+        return activityVoteRepository.findRejectedActivitiesByUserIdAndGroupId(userId, groupId);
+    }
+
+    public List<Activity> getUnvotedPendingActivities(Long groupId, Long userId) {
+        return activityRepository.findUnvotedActivities(groupId, userId);
+    }
+
+    public List<Activity> getAcceptedActivities(Long groupId, Long userId) {
+        return activityVoteRepository.findAcceptedActivitiesByUserIdAndGroupId(userId, groupId);
+    }
 }

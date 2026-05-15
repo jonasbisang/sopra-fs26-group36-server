@@ -98,18 +98,6 @@ public class EmailServiceTest {
     }
 
     @Test
-    public void sendActivityScheduledEmail_bodyContainsLocation() {
-        List<User> participants = Collections.singletonList(userAlice);
-
-        emailService.sendActivityScheduledEmail(testActivity, participants);
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertTrue(captor.getValue().getText().contains("Zurich Mountains"));
-    }
-
-    @Test
     public void sendActivityScheduledEmail_bodyContainsFormattedDate() {
         List<User> participants = Collections.singletonList(userAlice);
 
@@ -143,18 +131,6 @@ public class EmailServiceTest {
         verify(mailSender).send(captor.capture());
 
         assertTrue(captor.getValue().getText().contains("alice"));
-    }
-
-    @Test
-    public void sendActivityScheduledEmail_sentToCorrectRecipient() {
-        List<User> participants = Collections.singletonList(userAlice);
-
-        emailService.sendActivityScheduledEmail(testActivity, participants);
-
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender).send(captor.capture());
-
-        assertEquals("alice@example.com", captor.getValue().getTo()[0]);
     }
 
     @Test

@@ -103,7 +103,7 @@ class ActivityControllerTest {
         a.setName("Pending Hike");
         a.setStatus(ActivityStatus.PENDING);
 
-        given(activityService.getProposedActivitiesByGroupId(1L)).willReturn(List.of(a));
+        given(activityService.getProposedActivitiesByGroupId(1L, null)).willReturn(List.of(a));
         given(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(4L)).willReturn(0L);
         given(activityVoteRepository.findByActivityId(4L)).willReturn(Collections.emptyList());
 

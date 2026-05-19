@@ -425,7 +425,7 @@ public class ActivityServiceTest {
         when(groupRepository.findById(99L)).thenReturn(Optional.empty());
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-            () -> activityService.getProposedActivitiesByGroupId(99L));
+            () -> activityService.getProposedActivitiesByGroupId(99L, null));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
@@ -435,7 +435,7 @@ public class ActivityServiceTest {
         when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
             .thenReturn(List.of(testActivity));
 
-        List<Activity> result = activityService.getProposedActivitiesByGroupId(1L);
+        List<Activity> result = activityService.getProposedActivitiesByGroupId(1L, null);
         assertEquals(1, result.size());
         assertEquals(ActivityStatus.PENDING, result.get(0).getStatus());
     }
@@ -446,7 +446,7 @@ public class ActivityServiceTest {
         when(activityRepository.findByGroupGroupIdAndStatus(1L, ActivityStatus.PENDING))
             .thenReturn(Collections.emptyList());
 
-        List<Activity> result = activityService.getProposedActivitiesByGroupId(1L);
+        List<Activity> result = activityService.getProposedActivitiesByGroupId(1L, null);
         assertTrue(result.isEmpty());
     }
 

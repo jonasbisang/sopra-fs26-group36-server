@@ -24,6 +24,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 
+import java.util.Set;
+import java.util.Optional;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -109,7 +111,7 @@ public class ActivityService {
 
     public List<Activity> getActivities(Long groupId) {
     groupRepository.findById(groupId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found with ID: " + groupId));
     return activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.SCHEDULED);
     }
 
@@ -120,10 +122,18 @@ public class ActivityService {
     if (!activity.getGroup().getGroupId().equals(groupId)) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity does not belong to this group");}
 
-    if (activityVoteRepository.existsByActivityIdAndUserId(activityId, userId)
-        && activity.getStatus() != ActivityStatus.SCHEDULED) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already voted on this activity");}
-
+    Optional<ActivityVote> existing = activityVoteRepository.findByActivityIdAndUserId(activityId, userId);
+    if (existing.isPresent() && activity.getStatus() != ActivityStatus.SCHEDULED) {
+        existing.get().setWantsToJoin(wantsToJoin);
+        activityVoteRepository.save(existing.get());
+    if (wantsToJoin) {
+        long acceptCount = activityVoteRepository.countByActivityIdAndWantsToJoinTrue(activityId);
+        if (acceptCount >= activity.getMinSize()) {
+            findSchedule(activity);
+        }
+    }
+    return;
+}
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -178,13 +188,19 @@ public class ActivityService {
         }
     }
 
-    public List<Activity> getProposedActivitiesByGroupId(Long groupId) {
-        groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found with ID: " + groupId));
-    
-        List<Activity> activities = activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.PENDING);
-    
-        return activities;
+    public List<Activity> getProposedActivitiesByGroupId(Long groupId, Long userId) {
+    groupRepository.findById(groupId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found with ID: " + groupId));
+                    
+        List<Activity> pending = activityRepository.findByGroupGroupIdAndStatus(groupId, ActivityStatus.PENDING);
+        if (userId == null) return pending;
+        Set<Long> votedIds = activityVoteRepository.findByUserId(userId)
+            .stream()
+            .map(v -> v.getActivity().getId())
+            .collect(Collectors.toSet());
+        return pending.stream()
+            .filter(a -> !votedIds.contains(a.getId()))
+            .collect(Collectors.toList());
     }
 
     private void findSchedule(Activity activity) {
@@ -351,5 +367,14 @@ public class ActivityService {
     groupRepository.findById(groupId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
     return activityRepository.findByGroupGroupIdAndStatus(groupId, status);
+    }
+
+
+    public List<Activity> getActivitiesByUserVote(Long groupId, Long userId, boolean wantsToJoin) {
+    List<ActivityVote> votes = activityVoteRepository.findByUserIdAndWantsToJoin(userId, wantsToJoin);
+    return votes.stream()
+        .map(ActivityVote::getActivity)
+        .filter(a -> a.getGroup().getGroupId().equals(groupId))
+        .collect(Collectors.toList());
     }
 }

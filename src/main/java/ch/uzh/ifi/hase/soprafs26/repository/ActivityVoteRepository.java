@@ -11,8 +11,11 @@ import java.util.Optional;
 public interface ActivityVoteRepository extends JpaRepository<ActivityVote, Long> {
     boolean existsByActivityIdAndUserId(Long activityId, Long userId);
     long countByActivityIdAndWantsToJoinTrue(Long activityId);
-    
+
+    List<ActivityVote> findByUserId(Long userId);
+    List<ActivityVote> findByUserIdAndWantsToJoin(Long userId, boolean wantsToJoin);
     List<ActivityVote> findByActivityId(Long activityId);
+    
     void deleteByActivityId(Long activityId);
 
     Optional<ActivityVote> findByActivityIdAndUserId(Long activityId, Long userId);

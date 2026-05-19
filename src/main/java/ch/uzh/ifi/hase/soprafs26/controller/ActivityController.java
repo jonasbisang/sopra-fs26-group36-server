@@ -40,18 +40,26 @@ public ActivityController(ActivityService activityService,
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<ActivityGetDTO> getProposedActivities(@PathVariable Long groupId,
-                                                @RequestParam(required = false) String status) {
+                                                  @RequestParam(required = false) String status,
+                                                  @RequestParam(required = false) Long userId) {
         List<Activity> activities;
-        if ("SCHEDULED".equals(status)) {
-            activities = activityService.getActivities(groupId);
-        } else if ("PAST".equals(status)) {
-            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.PAST);
-        } else if ("FAILED".equals(status)) {
-            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.FAILED);
-        } else {
-            activities = activityService.getProposedActivitiesByGroupId(groupId);
-        }
-        
+
+        if (("ACCEPTED".equals(status) || "REJECTED".equals(status)) && userId != null) {
+            boolean wantsToJoin = "ACCEPTED".equals(status);
+            activities = activityService.getActivitiesByUserVote(groupId, userId, wantsToJoin);}
+            
+        else if ("SCHEDULED".equals(status)) {
+            activities = activityService.getActivities(groupId);} 
+            
+        else if ("PAST".equals(status)) {
+            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.PAST);}
+            
+        else if ("FAILED".equals(status)) {
+            activities = activityService.getActivitiesByStatus(groupId, ActivityStatus.FAILED);}
+            
+        else {
+            activities = activityService.getProposedActivitiesByGroupId(groupId, userId);}
+            
         List<ActivityGetDTO> activityGetDTOs = new ArrayList<>();
         for (Activity activity : activities) {
             ActivityGetDTO dto = DTOMapper.INSTANCE.convertEntityToActivityGetDTO(activity);
@@ -63,10 +71,9 @@ public ActivityController(ActivityService activityService,
                 .map(v -> v.getUser().getUsername())
                 .collect(Collectors.toList());
             dto.setParticipantUsernames(usernames);
-            activityGetDTOs.add(dto);
-            }
+            activityGetDTOs.add(dto);}
         return activityGetDTOs;
-}
+    }
 
     @PostMapping("/groups/{groupId}/activities/{activityId}/votes")
     @ResponseStatus(HttpStatus.CREATED)

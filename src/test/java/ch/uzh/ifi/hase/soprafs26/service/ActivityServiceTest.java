@@ -292,12 +292,21 @@ public class ActivityServiceTest {
     }
 
     @Test
-    public void vote_alreadyVotedPendingActivity_throwsConflict() {
-        when(activityVoteRepository.existsByActivityIdAndUserId(1L, 1L)).thenReturn(true);
+    public void vote_alreadyVotedPendingActivity_updatesExistingVote() {
+        ActivityVote existingVote = new ActivityVote();
+        existingVote.setWantsToJoin(false);
+        existingVote.setActivity(testActivity);
+        existingVote.setUser(testUser);
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-            () -> activityService.vote(1L, 1L, true, 1L));
-        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        when(activityVoteRepository.findByActivityIdAndUserId(1L, 1L))
+                                    .thenReturn(Optional.of(existingVote));
+        when(activityVoteRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(activityVoteRepository.countByActivityIdAndWantsToJoinTrue(1L)).thenReturn(0L);
+
+        activityService.vote(1L, 1L, true, 1L);
+
+        assertTrue(existingVote.isWantsToJoin());
+        verify(activityVoteRepository, times(1)).save(existingVote);
     }
 
     @Test
